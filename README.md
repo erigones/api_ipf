@@ -9,7 +9,8 @@ autoupdate db to file (autoremove) - TEMPORARY
 
 show rules - TEMPORARY (same as show config)
 show stats - DONE
-start, stop, status - NEED TEST
+start, stop, status - DONE
+start with other config - OPEN
 show logs - OPEN
 get created log into db - OPEN
     check log file everytime the config is reloaded

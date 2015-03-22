@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.decorators import api_view
@@ -6,7 +5,7 @@ from rest_framework.decorators import api_view
 from api_ipf.models import ConfigFile
 from api_ipf.serializers import ConfigFileSerializer
 from api_ipf.helpers import *
-from eszone_ipf.settings import CONF_DIR
+
 
 def test(request):
     return HttpResponse("Test completed.")
@@ -91,14 +90,14 @@ def firewall(request, arg):
     elif request.method == 'PUT':
 
         try:
-            if status == 'Enabled' and arg == 'Start':
+            if status == 'online' and arg == 'Start':
                 return HttpResponse('Firewall is already started.')
-            elif status == 'Disabled' and arg == 'Start':
-                return HttpResponse(start_firewall())
-            elif status == 'Disabled' and arg == 'Stop':
+            elif status == 'disabled' and arg == 'Start':
+                return HttpResponse(enable_firewall())
+            elif status == 'disabled' and arg == 'Stop':
                 return HttpResponse('Firewall is already stopped.')
-            elif status == 'Enabled' and arg == 'Stop':
-                return HttpResponse(stop_firewall())
+            elif status == 'online' and arg == 'Stop':
+                return HttpResponse(disable_firewall())
             else:
                 raise Exception('Can\'t get firewall status.')
         except Exception as e:

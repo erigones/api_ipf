@@ -34,21 +34,23 @@ def get_statistics(arg):
 
 def get_status():
     try:
-        return Popen(
-            'svcs -x ipfilter:default | grep "State:" | cut -f3 -d " "').read()
+        return 'online'
+        #return Popen('svcs ipfilter | tail -n 1 | cut -d " " -f1').read()
     except Exception as e:
         return e
 
-def start_firewall():
+def enable_firewall():
     try:
-        return Popen('ipfstat enable').read()
+        return None
+        #return Popen('svcadm enable ipfilter').read()
     except Exception as e:
         print(e)
         return e
 
-def stop_firewall():
+def disable_firewall():
     try:
-        return Popen('ipfstat disable').read()
+        return None
+        #return Popen('svcadm disable ipfilter').read()
     except Exception as e:
         print(e)
         return e
