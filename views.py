@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 
 from api_ipf.models import ConfigFile
 from api_ipf.serializers import ConfigFileSerializer
-from api_ipf.helpers import JSONResponse, get_content, file_delete
+from api_ipf.helpers import *
 from eszone_ipf.settings import CONF_DIR
 
 def test(request):
@@ -59,3 +59,48 @@ def config_detail(request, title):
             return HttpResponse('File deleted.', status=204)
         except Exception as e:
             return e
+
+@csrf_exempt
+@api_view(['GET'])
+def statistics(request, arg):
+
+    if request.method == 'GET':
+        try:
+            return HttpResponse(get_statistics(arg))
+        except Exception as e:
+            print(e)
+            return HttpResponse(e)
+
+@csrf_exempt
+@api_view(['GET', 'PUT'])
+def firewall(request, arg):
+
+    try:
+        status = get_status()
+    except Exception as e:
+        print(e)
+        return HttpResponse(e)
+
+    if request.method == 'GET':
+        try:
+            return HttpResponse(status)
+        except Exception as e:
+            print(e)
+            return HttpResponse(e)
+
+    elif request.method == 'PUT':
+
+        try:
+            if status == 'Enabled' and arg == 'Start':
+                return HttpResponse('Firewall is already started.')
+            elif status == 'Disabled' and arg == 'Start':
+                return HttpResponse(start_firewall())
+            elif status == 'Disabled' and arg == 'Stop':
+                return HttpResponse('Firewall is already stopped.')
+            elif status == 'Enabled' and arg == 'Stop':
+                return HttpResponse(stop_firewall())
+            else:
+                raise Exception('Can\'t get firewall status.')
+        except Exception as e:
+            print(e)
+
