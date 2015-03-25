@@ -57,17 +57,28 @@ def config_detail(request, title):
             file_delete(title)
             return HttpResponse('File deleted.', status=204)
         except Exception as e:
-            return e
+            return HttpResponse(e)
 
 @csrf_exempt
 @api_view(['GET'])
-def statistics(request, arg):
+def ipfstat(request, arg):
 
     if request.method == 'GET':
         try:
-            return HttpResponse(ipf_stat(arg))
+            return HttpResponse(arg)
+            #return Popen('ipfstat {}'.format(arg)).read()
         except Exception as e:
-            print(e)
+            return HttpResponse(e)
+
+@csrf_exempt
+@api_view(['GET'])
+def ipnat(request, arg):
+
+    if request.method == 'GET':
+        try:
+            return HttpResponse(arg)
+            #return Popen('ipnat {}'.format(arg)).read()
+        except Exception as e:
             return HttpResponse(e)
 
 @csrf_exempt
@@ -77,14 +88,12 @@ def firewall(request, arg):
     try:
         status = get_status()
     except Exception as e:
-        print(e)
         return HttpResponse(e)
 
     if request.method == 'GET':
         try:
             return HttpResponse(status)
         except Exception as e:
-            print(e)
             return HttpResponse(e)
 
     elif request.method == 'PUT':
@@ -103,5 +112,5 @@ def firewall(request, arg):
             else:
                 raise Exception('Error: Wrong argument.')
         except Exception as e:
-            print(e)
+            return HttpResponse(e)
 

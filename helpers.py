@@ -26,13 +26,6 @@ def file_delete(title):
     except Exception as e:
         print(e)
 
-def ipf_stat(arg):
-    try:
-        return arg
-        #return Popen('ipstat {}'.format(arg)).read()
-    except Exception as e:
-        return e
-
 def get_status():
     try:
         return 'online'
