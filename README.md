@@ -5,7 +5,7 @@ config file downloads + script - DONE
 config file delete + script - DONE
 config file modify + script - DONE
 config files show all + script - DONE
-autoupdate db to file (autoremove) - TEMPORARY
+autoupdate db to file (autoremove) - DONE
 
 show rules - DONE (same as show config)
 show stats - DONE
@@ -13,7 +13,7 @@ start, stop, status - DONE
 start with other config - OPEN (not important)
 show logs - OPEN (simple/return path to file)
 autoopen downloaded file - DONE
-download, change, upload - OPEN
+download, change, upload - DONE
 ipf config load - OPEN
 db microseconds - not urgent
 filesecurity - not urgent

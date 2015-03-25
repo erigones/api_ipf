@@ -89,6 +89,22 @@ def firewall(request, arg):
             return HttpResponse(e)
 
 @csrf_exempt
+@api_view(['GET', 'PUT'])
+def log(request, arg):
+
+    if request.method == 'GET':
+        try:
+            return JSONResponse(get_logs(), status=200)
+        except Exception as e:
+            return HttpResponse(e)
+
+    elif request.method == 'PUT':
+        try:
+            return JSONResponse(change_log_file(arg), status=200)
+        except Exception as e:
+            return HttpResponse(e)
+
+@csrf_exempt
 @api_view(['GET'])
 def other_commands(request, args):
 

@@ -24,7 +24,7 @@ def file_delete(title):
     try:
         remove(''.join([CONF_DIR, title]))
     except Exception as e:
-        print(e)
+        return e
 
 def get_status():
     try:
@@ -38,7 +38,6 @@ def enable_firewall():
         return 'enabled'
         #return Popen('svcadm enable ipfilter').read()
     except Exception as e:
-        print(e)
         return e
 
 def disable_firewall():
@@ -46,5 +45,19 @@ def disable_firewall():
         return 'disabled'
         #return Popen('svcadm disable ipfilter').read()
     except Exception as e:
-        print(e)
+        return e
+
+def get_logs():
+    try:
+        return 'Log file.'
+        #file = Popen("grep local0.debug /etc/syslog.conf | cut -f2 -d$'\t'").read()
+        #with open(file) as f:
+        #    return f.read()
+    except Exception as e:
+        return e
+
+def change_log_file(arg):
+    try:
+        return 'Soon.'
+    except Exception as e:
         return e
