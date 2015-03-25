@@ -26,9 +26,10 @@ def file_delete(title):
     except Exception as e:
         print(e)
 
-def get_statistics(arg):
+def ipf_stat(arg):
     try:
-        return Popen('ipstat {}'.format(arg)).read()
+        return arg
+        #return Popen('ipstat {}'.format(arg)).read()
     except Exception as e:
         return e
 
@@ -41,7 +42,7 @@ def get_status():
 
 def enable_firewall():
     try:
-        return None
+        return 'enabled'
         #return Popen('svcadm enable ipfilter').read()
     except Exception as e:
         print(e)
@@ -49,7 +50,7 @@ def enable_firewall():
 
 def disable_firewall():
     try:
-        return None
+        return 'disabled'
         #return Popen('svcadm disable ipfilter').read()
     except Exception as e:
         print(e)

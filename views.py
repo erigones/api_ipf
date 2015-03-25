@@ -8,7 +8,7 @@ from api_ipf.helpers import *
 
 
 def test(request):
-    return HttpResponse("Test completed.")
+    return HttpResponse('Test completed.')
 
 @csrf_exempt
 @api_view(['GET', 'POST'])
@@ -65,7 +65,7 @@ def statistics(request, arg):
 
     if request.method == 'GET':
         try:
-            return HttpResponse(get_statistics(arg))
+            return HttpResponse(ipf_stat(arg))
         except Exception as e:
             print(e)
             return HttpResponse(e)
@@ -90,16 +90,18 @@ def firewall(request, arg):
     elif request.method == 'PUT':
 
         try:
-            if status == 'online' and arg == 'Start':
-                return HttpResponse('Firewall is already started.')
-            elif status == 'disabled' and arg == 'Start':
-                return HttpResponse(enable_firewall())
-            elif status == 'disabled' and arg == 'Stop':
-                return HttpResponse('Firewall is already stopped.')
-            elif status == 'online' and arg == 'Stop':
-                return HttpResponse(disable_firewall())
+            if arg == 'start':
+                if status == 'disabled':
+                    return HttpResponse(enable_firewall())
+                elif status == 'online':
+                    return HttpResponse('Firewall is already started.')
+            elif arg == 'stop':
+                if status == 'online':
+                    return HttpResponse(disable_firewall())
+                else:
+                    return HttpResponse('Firewall is already stopped.')
             else:
-                raise Exception('Can\'t get firewall status.')
+                raise Exception('Error: Wrong argument.')
         except Exception as e:
             print(e)
 
