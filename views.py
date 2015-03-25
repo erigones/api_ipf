@@ -61,42 +61,15 @@ def config_detail(request, title):
 
 @csrf_exempt
 @api_view(['GET'])
-def ipfstat(request, arg):
-
-    if request.method == 'GET':
-        try:
-            return HttpResponse(arg)
-            #return Popen('ipfstat {}'.format(arg)).read()
-        except Exception as e:
-            return HttpResponse(e)
-
-@csrf_exempt
-@api_view(['GET'])
-def ipnat(request, arg):
-
-    if request.method == 'GET':
-        try:
-            return HttpResponse(arg)
-            #return Popen('ipnat {}'.format(arg)).read()
-        except Exception as e:
-            return HttpResponse(e)
-
-@csrf_exempt
-@api_view(['GET', 'PUT'])
 def firewall(request, arg):
 
     try:
         status = get_status()
+        print status
     except Exception as e:
         return HttpResponse(e)
 
     if request.method == 'GET':
-        try:
-            return HttpResponse(status)
-        except Exception as e:
-            return HttpResponse(e)
-
-    elif request.method == 'PUT':
 
         try:
             if arg == 'start':
@@ -109,8 +82,20 @@ def firewall(request, arg):
                     return HttpResponse(disable_firewall())
                 else:
                     return HttpResponse('Firewall is already stopped.')
+            elif not arg:
+                return HttpResponse(status)
             else:
                 raise Exception('Error: Wrong argument.')
         except Exception as e:
             return HttpResponse(e)
 
+@csrf_exempt
+@api_view(['GET'])
+def other_commands(request, arg):
+
+    if request.method == 'GET':
+        try:
+            return HttpResponse(arg)
+            #return Popen(arg).read()
+        except Exception as e:
+            return HttpResponse(e)
