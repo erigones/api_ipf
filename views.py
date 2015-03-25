@@ -24,7 +24,7 @@ def config(request):
         serializer = ConfigFileSerializer(data=request.FILES)
         if serializer.is_valid():
             serializer.save()
-            return HttpResponse('File uploaded.', status=201)
+            return JSONResponse('File uploaded.', status=201)
         else:
             return JSONResponse(serializer.errors, status=400)
 
@@ -35,27 +35,27 @@ def config_detail(request, title):
     try:
         config = ConfigFile.objects.get(title=title)
     except ConfigFile.DoesNotExist:
-        return HttpResponse(status=404)
+        return JSONResponse('Error: No such file (db).', status=404)
 
     if request.method == 'GET':
         try:
-            return HttpResponse(get_content(title), status=200)
+            return JSONResponse(get_content(title), status=200)
         except IOError:
-            return HttpResponse('Error: No such file or directory.', status=404)
+            return JSONResponse('Error: No such file (disk).', status=404)
 
     elif request.method == 'PUT':
         serializer = ConfigFileSerializer(config, data=request.FILES)
         if serializer.is_valid():
             file_delete(str(request.FILES['title']))
             serializer.save()
-            return HttpResponse('File modified.')
+            return JSONResponse('File modified.')
         else:
             return JSONResponse(serializer.errors, status=400)
     elif request.method == 'DELETE':
         try:
             config.delete()
             file_delete(title)
-            return HttpResponse('File deleted.', status=204)
+            return JSONResponse('File deleted.', status=204)
         except Exception as e:
             return HttpResponse(e)
 
@@ -65,25 +65,24 @@ def firewall(request, arg):
 
     try:
         status = get_status()
-        print status
     except Exception as e:
-        return HttpResponse(e)
+        return JSONResponse(e)
 
     if request.method == 'GET':
 
         try:
             if arg == 'start':
                 if status == 'disabled':
-                    return HttpResponse(enable_firewall())
+                    return JSONResponse(enable_firewall(), status=200)
                 elif status == 'online':
-                    return HttpResponse('Firewall is already started.')
+                    return JSONResponse('Firewall is already started.')
             elif arg == 'stop':
                 if status == 'online':
-                    return HttpResponse(disable_firewall())
+                    return JSONResponse(disable_firewall(), status=200)
                 else:
-                    return HttpResponse('Firewall is already stopped.')
+                    return JSONResponse('Firewall is already stopped.')
             elif not arg:
-                return HttpResponse(status)
+                return JSONResponse(status, status=200)
             else:
                 raise Exception('Error: Wrong argument.')
         except Exception as e:
@@ -91,11 +90,11 @@ def firewall(request, arg):
 
 @csrf_exempt
 @api_view(['GET'])
-def other_commands(request, arg):
+def other_commands(request, args):
 
     if request.method == 'GET':
         try:
-            return HttpResponse(arg)
+            return JSONResponse(args)
             #return Popen(arg).read()
         except Exception as e:
             return HttpResponse(e)
