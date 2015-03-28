@@ -1,8 +1,18 @@
 from os import remove
+from re import search
+from subprocess import Popen
+from datetime import datetime
+from fileinput import FileInput
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
-from subprocess import Popen
-from eszone_ipf.settings import CONF_DIR
+from rest_framework.exceptions import APIException
+from eszone_ipf.settings import CONF_DIR, LOG_CONF
+
+
+class MyException(APIException):
+    status_code = 404
+    default_detail = 'This is a bug'
+
 
 class JSONResponse(HttpResponse):
     """
@@ -33,31 +43,39 @@ def get_status():
     except Exception as e:
         return e
 
-def enable_firewall():
+def change_state(arg):
     try:
-        return 'enabled'
-        #return Popen('svcadm enable ipfilter').read()
+        return arg
+        #return Popen('svcadm {} ipfilter'.format(arg)).read()
     except Exception as e:
         return e
 
-def disable_firewall():
+def get_log():
     try:
-        return 'disabled'
-        #return Popen('svcadm disable ipfilter').read()
+        with open(LOG_CONF) as conf:
+            for line in conf.readlines():
+                if search('local0.debug', line):
+                    with open(line.split('\t')[-1]) as log:
+                        return log.read()
+
+        # bash find file alternative
+        # file = Popen("grep local0.debug LOG_CONF | cut -f2 -d$'\t'").read()
     except Exception as e:
         return e
 
-def get_logs():
+def modify_log(arg):
     try:
-        return 'Log file.'
-        #file = Popen("grep local0.debug /etc/syslog.conf | cut -f2 -d$'\t'").read()
-        #with open(file) as f:
-        #    return f.read()
-    except Exception as e:
-        return e
+        for line in FileInput(LOG_CONF, inplace=1):
+            if search('local0.debug', line):
+                #/var/log/{}
+                print 'local0.debug\t/root/Desktop/bp/other/{}'.format(arg),
+                with open('/root/Desktop/bp/other/{}'.format(arg), 'w+') as f:
+                    f.write('#ipf log\n#created: {}\n'.format(datetime.now()))
+                #Popen('svcadm restart system-log')
+                return
+            print line,
 
-def change_log_file(arg):
-    try:
-        return 'Soon.'
+        #sed alternative
+        #Popen("sed -i 's/local0.debug\t\/var\/log\/.*/local0.debug\t\/var\/log\/{}/g' {}".format(arg, LOF_CONF)
     except Exception as e:
         return e

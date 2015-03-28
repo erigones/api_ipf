@@ -6,6 +6,7 @@ from api_ipf.models import ConfigFile
 from api_ipf.serializers import ConfigFileSerializer
 from api_ipf.helpers import *
 
+#from rest_framework.exceptions import APIException
 
 def test(request):
     return HttpResponse('Test completed.')
@@ -73,12 +74,13 @@ def firewall(request, arg):
         try:
             if arg == 'start':
                 if status == 'disabled':
-                    return JSONResponse(enable_firewall(), status=200)
+                    return JSONResponse(change_state('enable'), status=200)
                 elif status == 'online':
                     return JSONResponse('Firewall is already started.')
             elif arg == 'stop':
                 if status == 'online':
-                    return JSONResponse(disable_firewall(), status=200)
+                    raise MyException()
+                    #return JSONResponse(change_state('disable'), status=200)
                 else:
                     return JSONResponse('Firewall is already stopped.')
             elif not arg:
@@ -86,21 +88,21 @@ def firewall(request, arg):
             else:
                 raise Exception('Error: Wrong argument.')
         except Exception as e:
-            return HttpResponse(e)
+            return JSONResponse(e)
 
 @csrf_exempt
-@api_view(['GET', 'PUT'])
-def log(request, arg):
+@api_view(['GET', 'POST'])
+def log(request):
 
     if request.method == 'GET':
         try:
-            return JSONResponse(get_logs(), status=200)
+            return JSONResponse(get_log(), status=200)
         except Exception as e:
             return HttpResponse(e)
 
-    elif request.method == 'PUT':
+    elif request.method == 'POST':
         try:
-            return JSONResponse(change_log_file(arg), status=200)
+            return JSONResponse(modify_log(request.DATA['title']), status=200)
         except Exception as e:
             return HttpResponse(e)
 
@@ -111,6 +113,6 @@ def other_commands(request, args):
     if request.method == 'GET':
         try:
             return JSONResponse(args)
-            #return Popen(arg).read()
+            #return JSONResponse(Popen(arg).read())
         except Exception as e:
             return HttpResponse(e)
