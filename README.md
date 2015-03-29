@@ -11,7 +11,7 @@ show rules - DONE (same as show config)
 show stats - DONE
 start, stop, status - DONE
 start with other config - OPEN (not important)
-show logs - OPEN (simple/return path to file)
+logs - DONE
 autoopen downloaded file - DONE
 download, change, upload - DONE
 ipf config load - OPEN
@@ -19,5 +19,5 @@ db microseconds - not urgent
 filesecurity - not urgent
 set config - OPEN(need time for it)
 blacklist - OPEN(need time for it)
-backup - OPEN (easy)
+backup - OPEN (copy when new config if problem run old config return exception)
 =======

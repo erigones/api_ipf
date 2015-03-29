@@ -1,12 +1,9 @@
 from django.views.decorators.csrf import csrf_exempt
-
 from rest_framework.decorators import api_view
 
 from api_ipf.models import ConfigFile
 from api_ipf.serializers import ConfigFileSerializer
 from api_ipf.helpers import *
-
-#from rest_framework.exceptions import APIException
 
 def test(request):
     return HttpResponse('Test completed.')
@@ -79,8 +76,7 @@ def firewall(request, arg):
                     return JSONResponse('Firewall is already started.')
             elif arg == 'stop':
                 if status == 'online':
-                    raise MyException()
-                    #return JSONResponse(change_state('disable'), status=200)
+                    return JSONResponse(change_state('disable'), status=200)
                 else:
                     return JSONResponse('Firewall is already stopped.')
             elif not arg:
@@ -88,7 +84,7 @@ def firewall(request, arg):
             else:
                 raise Exception('Error: Wrong argument.')
         except Exception as e:
-            return JSONResponse(e)
+            return HttpResponse(e)
 
 @csrf_exempt
 @api_view(['GET', 'POST'])

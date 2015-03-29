@@ -69,13 +69,23 @@ def modify_log(arg):
             if search('local0.debug', line):
                 #/var/log/{}
                 print 'local0.debug\t/root/Desktop/bp/other/{}'.format(arg),
+                """
+                for undetected reasons doesn't work
                 with open('/root/Desktop/bp/other/{}'.format(arg), 'w+') as f:
                     f.write('#ipf log\n#created: {}\n'.format(datetime.now()))
+                """
+                '''
+                already tested and working
+                log to file until "pkill ipmon":
+
+                Popen('ipmon -aD {}'.format(line))
+                '''
                 #Popen('svcadm restart system-log')
                 return
             print line,
 
         #sed alternative
         #Popen("sed -i 's/local0.debug\t\/var\/log\/.*/local0.debug\t\/var\/log\/{}/g' {}".format(arg, LOF_CONF)
+
     except Exception as e:
         return e
