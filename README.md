@@ -10,14 +10,16 @@ autoupdate db to file (autoremove) - DONE
 show rules - DONE (same as show config)
 show stats - DONE
 start, stop, status - DONE
-start with other config - OPEN (not important)
 logs - DONE
 autoopen downloaded file - DONE
 download, change, upload - DONE
+blacklist - DONE
+scheduler - DONE
+
+start with other config - OPEN (not important)
 ipf config load - OPEN
 db microseconds - not urgent
-filesecurity - not urgent
-set config - OPEN(need time for it)
-blacklist - OPEN(need time for it)
+file security - not urgent
+set config - UNCOMPLETED(need time for it)
 backup - OPEN (copy when new config if problem run old config return exception)
 =======
