@@ -3,15 +3,18 @@ from eszone_ipf.settings import CONF_DIR, BCK_DIR, LOG_DIR
 
 class ConfigFile(models.Model):
     title = models.CharField(max_length=100, primary_key=True)
-    config = models.FileField(upload_to=CONF_DIR)
+    type = models.CharField(max_length=10)
+    directory = models.FileField(upload_to=CONF_DIR)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    #https://gist.github.com/bryanchow/1195854 microsecond replacement
+    def get_type(self):
+        return self.type
+
 
 class LogFile(models.Model):
     title = models.CharField(max_length=100, primary_key=True)
-    log = models.FileField(null=True, blank=True)
+    directory = models.FileField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
