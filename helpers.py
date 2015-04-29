@@ -1,7 +1,7 @@
 from os import remove, rename
 from subprocess import Popen
 from django.http import HttpResponse
-from eszone_ipf.settings import BCK_DIR, CONF_DIR, LOG_DIR
+from api_ipf.settings import BCK_DIR, CONF_DIR
 from rest_framework.renderers import JSONRenderer
 
 
@@ -70,6 +70,7 @@ def activate_config(obj):
 
 def realize_command(args):
     try:
-        return JSONResponse(Popen(args).read(), status=200)
+        return JSONResponse(args)
+        #return JSONResponse(Popen(args).read(), status=200)
     except Exception as e:
         return JSONResponse(e, status=400)

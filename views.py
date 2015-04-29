@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 
 from api_ipf.serializers import *
 from api_ipf.helpers import *
+from api_ipf.settings import LOG_DIR
 
 
 @csrf_exempt
@@ -65,7 +66,6 @@ def log(request):
     elif request.method == 'POST':
         serializer = LogFileSerializer(data=request.DATA)
         if serializer.is_valid():
-            #Popen('ipmon -aD {}'.format(''.join([LOG_DIR, request.data['title']])))
             serializer.save()
             return JSONResponse('Log created.', status=200)
         else:
@@ -87,6 +87,7 @@ def log_detail(request, title):
 
     elif request.method == 'DELETE':
         return file_delete(log, path)
+
 
 @csrf_exempt
 @api_view(['GET'])

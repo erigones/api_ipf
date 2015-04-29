@@ -1,5 +1,6 @@
 from django.db import models
-from eszone_ipf.settings import CONF_DIR, BCK_DIR, LOG_DIR
+from subprocess import Popen
+from api_ipf.settings import CONF_DIR, LOG_DIR
 
 class ConfigFile(models.Model):
     title = models.CharField(max_length=100, primary_key=True)
@@ -25,4 +26,5 @@ class LogFile(models.Model):
         path = ''.join([LOG_DIR, self.title, '.log'])
         open(path, 'a').close()
         self.log = path
+        Popen('ipmon -aD {}'.format(path))
         super(LogFile, self).save(*args, **kwargs)
