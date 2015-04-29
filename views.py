@@ -1,4 +1,3 @@
-from subprocess import Popen
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 
@@ -18,13 +17,10 @@ def config(request):
     elif request.method == 'POST':
         serializer = ConfigFileSerializer(data=request.FILES)
         if serializer.is_valid():
-            serializer.save()
-            path = ''.join([CONF_DIR, request.FILES['title']])
-            if request.FILES['activate'] in ['Y', 'y', 'Yes', 'yes']:
-                activate_config(path, request.FILES['type'])
-            elif request.FILE['type'] == 'ippool':
-                add_pool(path)
-            return JSONResponse('Configuration created.', status=201)
+            response = activate_config(request.FILES)
+            if response.status_code != 406:
+                serializer.save()
+            return response
         else:
             return JSONResponse(serializer.errors, status=400)
 
@@ -40,29 +36,21 @@ def config_detail(request, title):
         return JSONResponse('Error: No such file (db).', status=404)
 
     if request.method == 'GET':
-        try:
-            return JSONResponse(file_content(path), status=200)
-        except IOError:
-            return JSONResponse('Error: No such file (disk).', status=404)
+        return file_content(path)
 
     elif request.method == 'PUT':
         request.FILES['type'] = config.get_type()
         serializer = ConfigFileSerializer(config, data=request.FILES)
         if serializer.is_valid():
-            file_delete(path)
-            serializer.save()
-            if request.FILES['activate'] in ['Y', 'y', 'Yes', 'yes']:
-                activate_config(path, request.FILES['type'])
-            return JSONResponse('Configuration modified.')
+            response = activate_config(request.FILES)
+            if response.status_code != 406:
+                serializer.save()
+            return response
         else:
             return JSONResponse(serializer.errors, status=400)
+
     elif request.method == 'DELETE':
-        try:
-            config.delete()
-            file_delete(path)
-            return JSONResponse('Configuration deleted.', status=204)
-        except Exception as e:
-            return HttpResponse(e)
+        return file_delete(config, path)
 
 
 @csrf_exempt
@@ -95,27 +83,14 @@ def log_detail(request, title):
         return JSONResponse('Error: No such file (db).', status=404)
 
     if request.method == 'GET':
-        try:
-            return JSONResponse(file_content(path), status=200)
-        except IOError:
-            return JSONResponse('Error: No such file (disk).', status=404)
+        return file_content(path)
 
     elif request.method == 'DELETE':
-        try:
-            #Popen('pkill ipmon')
-            log.delete()
-            file_delete(path)
-            return JSONResponse('Log deleted.', status=204)
-        except Exception as e:
-            return HttpResponse(e)
+        return file_delete(log, path)
 
 @csrf_exempt
 @api_view(['GET'])
 def other_commands(request, args):
 
     if request.method == 'GET':
-        try:
-            return JSONResponse(args)
-            #return JSONResponse(Popen(arg).read())
-        except Exception as e:
-            return HttpResponse(e)
+        return realize_command(args)
