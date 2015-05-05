@@ -19,7 +19,7 @@ def config(request):
         serializer = ConfigFileSerializer(data=request.FILES)
         if serializer.is_valid():
             response = activate_config(request.FILES)
-            if response.status_code != 406:
+            if response.status_code == 201:
                 serializer.save()
             return response
         else:
@@ -44,7 +44,7 @@ def config_detail(request, title):
         serializer = ConfigFileSerializer(config, data=request.FILES)
         if serializer.is_valid():
             response = activate_config(request.FILES)
-            if response.status_code != 406:
+            if response.status_code == 201:
                 serializer.save()
             return response
         else:

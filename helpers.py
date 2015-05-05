@@ -1,7 +1,7 @@
-from os import remove, rename
+from os import remove
 from subprocess import Popen
 from django.http import HttpResponse
-from api_ipf.settings import BCK_DIR, CONF_DIR
+from api_ipf.settings import CONF_DIR
 from rest_framework.renderers import JSONRenderer
 
 
@@ -35,13 +35,12 @@ def file_delete(obj, path):
 
 def activate_config(obj):
     path = ''.join([CONF_DIR, obj['title']])
-    bck_path = ''.join([BCK_DIR, 'conf.bck'])
 
     try:
         if obj['type'] not in ['ipf', 'nat', 'ippool']:
             return JSONResponse('Incorrect type.', status=400)
 
-        if obj['type'] == 'ippool':
+        elif obj['type'] == 'ippool':
             if not Popen('ippool -f {}'.format(path)).read():
                 return JSONResponse('Ippool added.', status=201)
             else:
@@ -51,7 +50,6 @@ def activate_config(obj):
 
     try:
         if obj['activate'] in ['Y', 'y', 'Yes', 'yes']:
-            rename(path, bck_path)
 
             if obj['type'] == 'ipf':
                 if not Popen('ipf -Fa -f {}'.format(path)).read():
@@ -64,8 +62,10 @@ def activate_config(obj):
                     return JSONResponse('Configuration activated.', status=201)
                 else:
                     return JSONResponse('Incorrect ipf format.', status=406)
+        else:
+            return JSONResponse('Configuration added.', status=201)
+
     except Exception as e:
-        rename(bck_path, path)
         return JSONResponse(e, status=400)
 
 def realize_command(args):
