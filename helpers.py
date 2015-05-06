@@ -2,12 +2,14 @@ from os import remove, rename, makedirs
 from os.path import exists
 from subprocess import Popen
 from django.http import HttpResponse
-from api_ipf.settings import CONF_DIR, LOG_DIR
+from api_ipf.settings import *
 from rest_framework.renderers import JSONRenderer
 from wget import download
 import schedule
 import time
 import zipfile
+import sys
+import os
 
 
 class JSONResponse(HttpResponse):
@@ -78,7 +80,10 @@ def activate_config(obj):
 
 def realize_command(args):
     try:
-        return JSONResponse(args)
+        if args.split()[0] in ALLOWED_COMMANDS:
+            return JSONResponse(args, status=200)
+        else:
+            return JSONResponse("Incorrect method", status=400)
         #return JSONResponse(Popen(args).read(), status=200)
     except Exception as e:
         return JSONResponse(e, status=400)
@@ -178,11 +183,17 @@ def upload_blacklist():
     '''
 
 def system_start():
-    check_dirs()
-    check_config()
-    upload_blacklist()
+    #check_dirs()
+    #check_config()
+    #upload_blacklist()
     schedule.every().day.do(upload_blacklist)
 
     while True:
         schedule.run_pending()
         time.sleep(3600)
+
+
+def system_exit():
+    f = open(os.devnull, 'w')
+    sys.stderr = f
+    sys.exit()
