@@ -133,12 +133,12 @@ def check_config():
         print('ippool.conf..........................................OK')
     else:
         with open(path, 'a') as f:
-            f.write('#ippool configuration')
+            f.write('#ippool configuration\n\n{}'.format(CONF_WARNING))
         print('ippool.conf has been created.........................OK')
 
     print('Startup configuration done.\n')
 
-def upload_blacklist():
+def update_blacklist():
     url = 'http://myip.ms/files/blacklist/general/full_blacklist_database.zip'
     dir = '/tmp/'
     zip_file = ''.join([dir, 'blacklist.zip'])
@@ -160,7 +160,12 @@ def upload_blacklist():
 
     try:
         with open(txt_file, 'r') as database:
+
+            with open(''.join([CONF_DIR, 'ippool.conf']), 'r') as ippool:
+                other_pools = ''.join(ippool.readlines()).split(CONF_WARNING)[0]
             with open(''.join([CONF_DIR, 'ippool.conf']), 'w') as ippool:
+                ippool.write(other_pools)
+                ippool.write(CONF_WARNING+'\n\n')
                 ippool.write('blacklist role = ipf type = tree number = 1\n{\n')
                 for line in database.readlines()[15:]:
                     ippool.write(line.split()[0]+',\n')
@@ -183,10 +188,10 @@ def upload_blacklist():
     '''
 
 def system_start():
-    #check_dirs()
-    #check_config()
-    #upload_blacklist()
-    schedule.every().day.do(upload_blacklist)
+    check_dirs()
+    check_config()
+    #update_blacklist()
+    schedule.every().day.do(update_blacklist)
 
     while True:
         schedule.run_pending()

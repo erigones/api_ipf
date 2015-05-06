@@ -89,6 +89,17 @@ def log_detail(request, title):
 
 @csrf_exempt
 @api_view(['GET'])
+def blacklist(request):
+    try:
+        update_blacklist()
+        return JSONResponse('Blacklist updated.', status=200)
+    except Exception as e:
+        return JSONResponse(e, status=400)
+
+
+
+@csrf_exempt
+@api_view(['GET'])
 def other_commands(request, args):
 
     if request.method == 'GET':
