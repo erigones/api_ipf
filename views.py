@@ -3,8 +3,6 @@ from rest_framework.decorators import api_view
 
 from api_ipf.serializers import *
 from api_ipf.helpers import *
-from api_ipf.settings import LOG_DIR
-
 
 @csrf_exempt
 @api_view(['GET', 'POST'])
