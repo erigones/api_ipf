@@ -44,7 +44,7 @@ def activate_config(obj):
             if not Popen('ippool -f {}'.format(path)).read():
                 return JSONResponse('Ippool added.', status=201)
             else:
-                return JSONResponse('Incorrect ippool format.', status=406)
+                return JSONResponse('Incorrect ippool format.', status=400)
     except Exception as e:
         return JSONResponse(e, status=400)
 
@@ -55,13 +55,13 @@ def activate_config(obj):
                 if not Popen('ipf -Fa -f {}'.format(path)).read():
                     return JSONResponse('Configuration activated.', status=201)
                 else:
-                    return JSONResponse('Incorrect ipf format.', status=406)
+                    return JSONResponse('Incorrect ipf format.', status=400)
 
             elif obj['type'] == 'nat':
                 if not Popen('ipnat -FC -f {}'.format(path)).read():
                     return JSONResponse('Configuration activated.', status=201)
                 else:
-                    return JSONResponse('Incorrect ipf format.', status=406)
+                    return JSONResponse('Incorrect ipf format.', status=400)
         else:
             return JSONResponse('Configuration added.', status=201)
 
