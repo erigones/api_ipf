@@ -27,6 +27,7 @@ class JSONResponse(HttpResponse):
 
 
 def file_content(path):
+
     try:
         with open(path, 'rb') as f:
             return JSONResponse(f.read(), status=200)
@@ -37,6 +38,7 @@ def file_content(path):
 
 
 def config_delete(obj, path):
+
     try:
         obj.delete()
         remove(path)
@@ -46,6 +48,7 @@ def config_delete(obj, path):
 
 
 def log_delete(log, path):
+
     try:
         sh.pkill('ipmon')
         log.delete()
@@ -56,6 +59,7 @@ def log_delete(log, path):
 
 
 def config_addition(title, form):
+
     path = ''.join([CONF_DIR, title])
 
     try:
@@ -105,6 +109,7 @@ def activate(form, path):
 
 
 def realize_command(args):
+
     try:
         if args.split()[0] in ALLOWED_COMMANDS:
             return JSONResponse(Popen(args).read(), status=200)
@@ -115,6 +120,7 @@ def realize_command(args):
 
 
 def check_dirs():
+
     print('Checking directories.')
     if exists(CONF_DIR):
         print('CONF_DIR.............................................OK')
@@ -130,6 +136,7 @@ def check_dirs():
 
 
 def add_file_to_db(title, path):
+
     cursor = connection.cursor()
     date = datetime.now()
     cursor.execute(
@@ -179,6 +186,7 @@ def check_config():
 
 
 def update_blacklist():
+
     url = 'http://myip.ms/files/blacklist/general/full_blacklist_database.zip'
     directory = '/tmp/'
     zip_file = ''.join([directory, 'full_blacklist_database.zip'])
@@ -229,6 +237,7 @@ def update_blacklist():
 
 
 def system_start():
+
     check_dirs()
     check_config()
     update_blacklist()
@@ -240,6 +249,7 @@ def system_start():
 
 
 def system_exit():
+
     f = open(devnull, 'w')
     sys.stderr = f
     sys.exit()
