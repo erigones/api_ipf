@@ -1,5 +1,6 @@
 import os
 import sys
+import sh
 import wget
 import schedule
 import time
@@ -39,51 +40,60 @@ def config_delete(obj, path):
         return JSONResponse(e, status=400)
 
 
-def log_delete(obj, path):
+def log_delete(log, path):
     try:
-        Popen('pkill ipmon')
-        obj.delete()
+        sh.pkill('ipmon')
+        log.delete()
         os.remove(path)
         return JSONResponse('Log deleted.', status=204)
     except Exception as e:
         return JSONResponse(e, status=400)
 
 
-def activate_config(obj):
-    path = ''.join([CONF_DIR, obj['title']])
+def config_addition(config):
+    path = ''.join([CONF_DIR, config['title']])
 
     try:
-        if obj['type'] not in ['ipf', 'nat', 'ippool']:
+        if config['type'] not in ['ipf', 'nat', 'ippool']:
             return JSONResponse('Incorrect type.', status=400)
 
-        elif obj['type'] == 'ippool':
-            if not Popen('ippool -f {}'.format(path)).read():
-                Popen('svcadm refresh ipfilter')
-                return JSONResponse('Ippool added.', status=201)
-            else:
+        elif config['type'] == 'ipf':
+            bck_file = sh.ipfstat('-io')
+            if sh.ipf(f=path):
+                sh.ipf('-Fa', f=bck_file)
+                return JSONResponse('Incorrect ipf format.', status=400)
+            return JSONResponse('Ipf Configuration added.', status=201)
+
+        elif config['type'] == 'nat':
+            bck_file = sh.ipnat('-l')
+            if sh.ipnat(f=path):
+                sh.ipnat('-FC', f=bck_file)
+                return JSONResponse('Incorrect ipf format.', status=400)
+            return JSONResponse('Nat configuration added.', status=201)
+
+        elif config['type'] == 'ippool':
+            bck_file = sh.ippool('-l')
+            if sh.ippool(f=path):
+                sh.ippool('-F')
+                sh.ippool(f=bck_file)
                 return JSONResponse('Incorrect ippool format.', status=400)
+            return JSONResponse('Ippool configuration added.', status=201)
+
     except Exception as e:
         return JSONResponse(e, status=400)
 
+
+def activate(config, path):
+
     try:
-        if obj['activate'] in ['Y', 'y', 'Yes', 'yes']:
-
-            if obj['type'] == 'ipf':
-                if not Popen('ipf -f {}'.format(path)).read():
-                    Popen('ipf -Fa -f {}'.format(path))
-                    return JSONResponse('Configuration activated.', status=201)
-                else:
-                    return JSONResponse('Incorrect ipf format.', status=400)
-
-            elif obj['type'] == 'nat':
-                if not Popen('ipnat -f {}'.format(path)).read():
-                    Popen('ipnat -FC -f {}'.format(path))
-                    return JSONResponse('Configuration activated.', status=201)
-                else:
-                    return JSONResponse('Incorrect ipf format.', status=400)
-        else:
-            return JSONResponse('Configuration added.', status=201)
-
+        if config['type'] == 'ipf':
+            sh.ipf('-Fa', f=path)
+        elif config['type'] == 'nat':
+            sh.ipnat('-FC', f=path)
+        elif config['type'] == 'ippool':
+            sh.ippool('-F')
+            sh.ippool(f=path)
+        return JSONResponse('Configuration activated.', status=200)
     except Exception as e:
         return JSONResponse(e, status=400)
 
@@ -178,7 +188,7 @@ def update_blacklist():
                 other_pools = ''.join(ippool.readlines()).split(CONF_WARNING)[0]
 
             with open(conf_file, 'w') as ippool:
-                ippool.write(other_pools+CONF_WARNING+'\n\n'+
+                ippool.write(other_pools + CONF_WARNING + '\n\n' +
                              'blacklist role = ipf type = tree number = 1\n{\n')
                 for line in database.readlines()[15:]:
                     ippool.write(line.split()[0]+',\n')
@@ -194,8 +204,8 @@ def update_blacklist():
         return e
 
     '''try:
-        Popen('ippool -F')
-        Popen('ippoll -f {}'.format(conf_file))
+        sh.ippool('-F')
+        sh.ippool(f=conf_file)
     except Exception as e:
         return e
     '''

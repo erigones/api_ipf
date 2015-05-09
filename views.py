@@ -16,7 +16,7 @@ def config(request):
     elif request.method == 'POST':
         serializer = ConfigFileSerializer(data=request.FILES)
         if serializer.is_valid():
-            response = activate_config(request.FILES)
+            response = config_addition(request.FILES)
             if response.status_code == 201:
                 serializer.save()
             return response
@@ -41,7 +41,7 @@ def config_detail(request, title):
         request.FILES['type'] = config.get_type()
         serializer = ConfigFileSerializer(config, data=request.FILES)
         if serializer.is_valid():
-            response = activate_config(request.FILES)
+            response = config_addition(request.FILES)
             if response.status_code == 201:
                 serializer.save()
             return response
@@ -50,6 +50,20 @@ def config_detail(request, title):
 
     elif request.method == 'DELETE':
         return config_delete(config, path)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def config_activate(request, title):
+
+    if request.method == 'GET':
+
+        try:
+            config = ConfigFile.objects.get(title=title)
+            path = ''.join([CONF_DIR, title])
+            return activate(config, path)
+        except ConfigFile.DoesNotExist:
+            return JSONResponse('Error: No such file (db).', status=404)
 
 
 @csrf_exempt
