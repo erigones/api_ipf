@@ -10,7 +10,7 @@ def config(request):
 
     if request.method == 'GET':
         conf_list = ConfigFile.objects.all()
-        serializer = ModifiedSerializer(conf_list, many=True)
+        serializer = AccessConfigFileSerializer(conf_list, many=True)
         return JSONResponse(serializer.data, status=200)
 
     elif request.method == 'POST':

@@ -1,15 +1,13 @@
-from os import remove, rename, makedirs
-from os.path import exists
-from subprocess import Popen
-from django.http import HttpResponse
-from api_ipf.settings import *
-from rest_framework.renderers import JSONRenderer
-from wget import download
+import os
+import sys
+import wget
 import schedule
 import time
 import zipfile
-import sys
-import os
+from subprocess import Popen
+from django.http import HttpResponse
+from rest_framework.renderers import JSONRenderer
+from api_ipf.settings import *
 
 
 class JSONResponse(HttpResponse):
@@ -35,7 +33,7 @@ def file_content(path):
 def config_delete(obj, path):
     try:
         obj.delete()
-        remove(path)
+        os.remove(path)
         return JSONResponse('Config deleted.', status=204)
     except Exception as e:
         return JSONResponse(e, status=400)
@@ -45,7 +43,7 @@ def log_delete(obj, path):
     try:
         Popen('pkill ipmon')
         obj.delete()
-        remove(path)
+        os.remove(path)
         return JSONResponse('Log deleted.', status=204)
     except Exception as e:
         return JSONResponse(e, status=400)
@@ -103,23 +101,23 @@ def realize_command(args):
 
 def check_dirs():
     print('Checking directories.')
-    if exists(CONF_DIR):
+    if os.path.exists(CONF_DIR):
         print('CONF_DIR.............................................OK')
     else:
-        makedirs(CONF_DIR)
+        os.makedirs(CONF_DIR)
         print('CONF_DIR has been created............................OK')
 
-    if exists(LOG_DIR):
+    if os.path.exists(LOG_DIR):
         print('LOG_DIR..............................................OK')
     else:
-        makedirs(LOG_DIR)
+        os.makedirs(LOG_DIR)
         print('LOG_DIR has been created.............................OK')
 
 
 def check_config():
     print('Checking configuration files.')
     path = ''.join([CONF_DIR, 'ipf.conf'])
-    if exists(path):
+    if os.path.exists(path):
         print('ipf.conf.............................................OK')
     else:
         with open(path, 'a') as f:
@@ -127,7 +125,7 @@ def check_config():
         print('ipf.conf has been created............................OK')
 
     path = ''.join([CONF_DIR, 'ipf6.conf'])
-    if exists(path):
+    if os.path.exists(path):
         print('ipf6.conf............................................OK')
     else:
         with open(path, 'a') as f:
@@ -135,7 +133,7 @@ def check_config():
         print('ipf6.conf has been created...........................OK')
 
     path = ''.join([CONF_DIR, 'ipnat.conf'])
-    if exists(path):
+    if os.path.exists(path):
         print('ipnat.conf...........................................OK')
     else:
         with open(path, 'a') as f:
@@ -143,7 +141,7 @@ def check_config():
         print('ipnat.conf has been created..........................OK')
 
     path = ''.join([CONF_DIR, 'ippool.conf'])
-    if exists(path):
+    if os.path.exists(path):
         print('ippool.conf..........................................OK')
     else:
         with open(path, 'a') as f:
@@ -162,7 +160,7 @@ def update_blacklist():
 
     try:
         print('Downloading updates.')
-        download(url, zip_file)
+        wget.download(url, zip_file)
     except Exception as e:
         return e
 
@@ -190,8 +188,8 @@ def update_blacklist():
         return e
 
     try:
-        remove(zip_file)
-        remove(txt_file)
+        os.remove(zip_file)
+        os.remove(txt_file)
     except Exception as e:
         return e
 
