@@ -31,7 +31,17 @@ def file_content(path):
     except Exception as e:
         return JSONResponse(e, status=400)
 
-def file_delete(obj, path):
+
+def config_delete(obj, path):
+    try:
+        obj.delete()
+        remove(path)
+        return JSONResponse('Config deleted.', status=204)
+    except Exception as e:
+        return JSONResponse(e, status=400)
+
+
+def log_delete(obj, path):
     try:
         Popen('pkill ipmon')
         obj.delete()
@@ -39,6 +49,7 @@ def file_delete(obj, path):
         return JSONResponse('Log deleted.', status=204)
     except Exception as e:
         return JSONResponse(e, status=400)
+
 
 def activate_config(obj):
     path = ''.join([CONF_DIR, obj['title']])
@@ -78,15 +89,17 @@ def activate_config(obj):
     except Exception as e:
         return JSONResponse(e, status=400)
 
+
 def realize_command(args):
     try:
         if args.split()[0] in ALLOWED_COMMANDS:
             return JSONResponse(args, status=200)
         else:
             return JSONResponse("Incorrect method", status=400)
-        #return JSONResponse(Popen(args).read(), status=200)
+        # return JSONResponse(Popen(args).read(), status=200)
     except Exception as e:
         return JSONResponse(e, status=400)
+
 
 def check_dirs():
     print('Checking directories.')
@@ -101,6 +114,7 @@ def check_dirs():
     else:
         makedirs(LOG_DIR)
         print('LOG_DIR has been created.............................OK')
+
 
 def check_config():
     print('Checking configuration files.')
@@ -138,59 +152,61 @@ def check_config():
 
     print('Startup configuration done.\n')
 
+
 def update_blacklist():
     url = 'http://myip.ms/files/blacklist/general/full_blacklist_database.zip'
-    dir = '/tmp/'
-    zip_file = ''.join([dir, 'blacklist.zip'])
-    txt_file = ''.join([dir, 'blacklist.txt'])
+    directory = '/tmp/'
+    zip_file = ''.join([directory, 'full_blacklist_database.zip'])
+    txt_file = ''.join([directory, 'full_blacklist_database.txt'])
+    conf_file = ''.join([CONF_DIR, 'ippool.conf'])
 
     try:
         print('Downloading updates.')
         download(url, zip_file)
     except Exception as e:
-        print(e)
+        return e
 
     try:
-        with zipfile.ZipFile(zip_file, 'r') as file:
-            file.extractall(dir)
-            rename(''.join([dir, 'full_blacklist_database.txt']), txt_file)
+        with zipfile.ZipFile(zip_file, 'r') as f:
+            f.extractall(directory)
         print('\nUnzip file...........................................OK')
     except Exception as e:
-        print(e)
+        return e
 
     try:
         with open(txt_file, 'r') as database:
 
-            with open(''.join([CONF_DIR, 'ippool.conf']), 'r') as ippool:
+            with open(conf_file, 'r') as ippool:
                 other_pools = ''.join(ippool.readlines()).split(CONF_WARNING)[0]
-            with open(''.join([CONF_DIR, 'ippool.conf']), 'w') as ippool:
-                ippool.write(other_pools)
-                ippool.write(CONF_WARNING+'\n\n')
-                ippool.write('blacklist role = ipf type = tree number = 1\n{\n')
+
+            with open(conf_file, 'w') as ippool:
+                ippool.write(other_pools+CONF_WARNING+'\n\n'+
+                             'blacklist role = ipf type = tree number = 1\n{\n')
                 for line in database.readlines()[15:]:
                     ippool.write(line.split()[0]+',\n')
                 ippool.write('}')
         print('Blacklist update.....................................OK')
     except Exception as e:
-        print(e)
+        return e
 
     try:
         remove(zip_file)
         remove(txt_file)
     except Exception as e:
-        print(e)
+        return e
 
     '''try:
         Popen('ippool -F')
-        Popen('ippoll -f {}'.format(''.join([CONF_DIR, 'ippool.conf']))
+        Popen('ippoll -f {}'.format(conf_file))
     except Exception as e:
-        print(e)
+        return e
     '''
+
 
 def system_start():
     check_dirs()
     check_config()
-    #update_blacklist()
+    # update_blacklist()
     schedule.every().day.do(update_blacklist)
 
     while True:

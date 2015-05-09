@@ -7,11 +7,13 @@ class ConfigFileSerializer(serializers.ModelSerializer):
         model = ConfigFile
         fields = ('directory','title', 'type',)
 
-class ModifiedSerializer(serializers.ModelSerializer):
+
+class AccessConfigFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ConfigFile
         fields = ('title', 'type', 'created', 'modified')
+
 
 class LogFileSerializer(serializers.ModelSerializer):
 

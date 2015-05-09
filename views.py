@@ -11,7 +11,7 @@ def config(request):
     if request.method == 'GET':
         conf_list = ConfigFile.objects.all()
         serializer = ModifiedSerializer(conf_list, many=True)
-        return JSONResponse(serializer.data)
+        return JSONResponse(serializer.data, status=200)
 
     elif request.method == 'POST':
         serializer = ConfigFileSerializer(data=request.FILES)
@@ -49,7 +49,7 @@ def config_detail(request, title):
             return JSONResponse(serializer.errors, status=400)
 
     elif request.method == 'DELETE':
-        return file_delete(config, path)
+        return config_delete(config, path)
 
 
 @csrf_exempt
@@ -59,7 +59,7 @@ def log(request):
     if request.method == 'GET':
         log_list = LogFile.objects.all()
         serializer = LogFileSerializer(log_list, many=True)
-        return JSONResponse(serializer.data)
+        return JSONResponse(serializer.data, status=200)
 
     elif request.method == 'POST':
         serializer = LogFileSerializer(data=request.DATA)
@@ -84,18 +84,18 @@ def log_detail(request, title):
         return file_content(path)
 
     elif request.method == 'DELETE':
-        return file_delete(log, path)
+        return log_delete(log, path)
 
 
 @csrf_exempt
 @api_view(['GET'])
 def blacklist(request):
-    try:
-        update_blacklist()
-        return JSONResponse('Blacklist updated.', status=200)
-    except Exception as e:
-        return JSONResponse(e, status=400)
 
+    if request.method == 'GET':
+        response = update_blacklist()
+        if response:
+            return JSONResponse('Blacklist updated.', status=200)
+        return JSONResponse(response, status=400)
 
 
 @csrf_exempt
