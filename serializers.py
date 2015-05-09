@@ -5,14 +5,14 @@ class ConfigFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ConfigFile
-        fields = ('directory','title', 'type',)
+        fields = ('directory','title', 'form',)
 
 
 class AccessConfigFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ConfigFile
-        fields = ('title', 'type', 'created', 'modified')
+        fields = ('title', 'form', 'created', 'modified')
 
 
 class LogFileSerializer(serializers.ModelSerializer):

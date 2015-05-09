@@ -4,7 +4,7 @@ from api_ipf.settings import CONF_DIR, LOG_DIR
 
 class ConfigFile(models.Model):
     title = models.CharField(max_length=100, primary_key=True)
-    type = models.CharField(max_length=10, default='ipf')
+    form = models.CharField(max_length=10, default='ipf')
     directory = models.FileField(upload_to=CONF_DIR, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -24,3 +24,4 @@ class LogFile(models.Model):
         self.log = path
         Popen('ipmon -aD {}'.format(path))
         super(LogFile, self).save(*args, **kwargs)
+        return self.directory

@@ -1,7 +1,8 @@
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 
-from api_ipf.serializers import *
+from api_ipf.models import ConfigFile, LogFile
+from api_ipf.serializers import AccessConfigFileSerializer, LogFileSerializer
 from api_ipf.helpers import *
 
 @csrf_exempt
@@ -16,7 +17,8 @@ def config(request):
     elif request.method == 'POST':
         serializer = ConfigFileSerializer(data=request.FILES)
         if serializer.is_valid():
-            response = config_addition(request.FILES)
+            response = config_addition(str(request.FILES['title']),
+                                       str(request.FILES['form']))
             if response.status_code == 201:
                 serializer.save()
             return response
@@ -38,10 +40,11 @@ def config_detail(request, title):
         return file_content(path)
 
     elif request.method == 'PUT':
-        request.FILES['type'] = config.get_type()
+        request.FILES['form'] = config.get_type()
         serializer = ConfigFileSerializer(config, data=request.FILES)
         if serializer.is_valid():
-            response = config_addition(request.FILES)
+            response = config_addition(str(request.FILES['title']),
+                                       str(request.FILES['form']))
             if response.status_code == 201:
                 serializer.save()
             return response
@@ -78,7 +81,8 @@ def log(request):
     elif request.method == 'POST':
         serializer = LogFileSerializer(data=request.DATA)
         if serializer.is_valid():
-            serializer.save()
+            path = serializer.save()
+            sh.ipmon('-Fa', f=path)
             return JSONResponse('Log created.', status=200)
         else:
             return JSONResponse(serializer.errors, status=400)

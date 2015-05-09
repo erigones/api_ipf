@@ -1,14 +1,19 @@
-import os
-import sys
-import sh
-import wget
-import schedule
-import time
-import zipfile
+from os import remove, makedirs, devnull
+from os.path import exists
+from shutil import copyfile
 from subprocess import Popen
+from datetime import datetime
+from wget import download
+from zipfile import ZipFile
+from django.db import connection
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
 from api_ipf.settings import *
+from api_ipf.serializers import ConfigFileSerializer
+import sys
+import sh
+import schedule
+import time
 
 
 class JSONResponse(HttpResponse):
@@ -34,7 +39,7 @@ def file_content(path):
 def config_delete(obj, path):
     try:
         obj.delete()
-        os.remove(path)
+        remove(path)
         return JSONResponse('Config deleted.', status=204)
     except Exception as e:
         return JSONResponse(e, status=400)
@@ -44,34 +49,34 @@ def log_delete(log, path):
     try:
         sh.pkill('ipmon')
         log.delete()
-        os.remove(path)
+        remove(path)
         return JSONResponse('Log deleted.', status=204)
     except Exception as e:
         return JSONResponse(e, status=400)
 
 
-def config_addition(config):
-    path = ''.join([CONF_DIR, config['title']])
+def config_addition(title, form):
+    path = ''.join([CONF_DIR, title])
 
     try:
-        if config['type'] not in ['ipf', 'nat', 'ippool']:
+        if form not in ['ipf', 'ipnat', 'ippool', 'ipf6']:
             return JSONResponse('Incorrect type.', status=400)
 
-        elif config['type'] == 'ipf':
+        elif form in ['ipf', 'ipf6']:
             bck_file = sh.ipfstat('-io')
             if sh.ipf(f=path):
                 sh.ipf('-Fa', f=bck_file)
                 return JSONResponse('Incorrect ipf format.', status=400)
             return JSONResponse('Ipf Configuration added.', status=201)
 
-        elif config['type'] == 'nat':
+        elif form == 'ipnat':
             bck_file = sh.ipnat('-l')
             if sh.ipnat(f=path):
                 sh.ipnat('-FC', f=bck_file)
                 return JSONResponse('Incorrect ipf format.', status=400)
             return JSONResponse('Nat configuration added.', status=201)
 
-        elif config['type'] == 'ippool':
+        elif form == 'ippool':
             bck_file = sh.ippool('-l')
             if sh.ippool(f=path):
                 sh.ippool('-F')
@@ -83,16 +88,17 @@ def config_addition(config):
         return JSONResponse(e, status=400)
 
 
-def activate(config, path):
+def activate(form, path):
 
     try:
-        if config['type'] == 'ipf':
+        if form in ['ipf', 'ipf6']:
             sh.ipf('-Fa', f=path)
-        elif config['type'] == 'nat':
+        elif form == 'ipnat':
             sh.ipnat('-FC', f=path)
-        elif config['type'] == 'ippool':
+        elif form == 'ippool':
             sh.ippool('-F')
             sh.ippool(f=path)
+            sh.svcadm('refresh', 'ipfilter')
         return JSONResponse('Configuration activated.', status=200)
     except Exception as e:
         return JSONResponse(e, status=400)
@@ -101,61 +107,72 @@ def activate(config, path):
 def realize_command(args):
     try:
         if args.split()[0] in ALLOWED_COMMANDS:
-            return JSONResponse(args, status=200)
+            return JSONResponse(Popen(args).read(), status=200)
         else:
             return JSONResponse("Incorrect method", status=400)
-        # return JSONResponse(Popen(args).read(), status=200)
     except Exception as e:
         return JSONResponse(e, status=400)
 
 
 def check_dirs():
     print('Checking directories.')
-    if os.path.exists(CONF_DIR):
+    if exists(CONF_DIR):
         print('CONF_DIR.............................................OK')
     else:
-        os.makedirs(CONF_DIR)
+        makedirs(CONF_DIR)
         print('CONF_DIR has been created............................OK')
 
-    if os.path.exists(LOG_DIR):
+    if exists(LOG_DIR):
         print('LOG_DIR..............................................OK')
     else:
-        os.makedirs(LOG_DIR)
+        makedirs(LOG_DIR)
         print('LOG_DIR has been created.............................OK')
 
 
+def add_file_to_db(title, path):
+    cursor = connection.cursor()
+    date = datetime.now()
+    cursor.execute(
+            'INSERT INTO api_ipf_configfile VALUES ("{}","{}","{}","{}","{}")'
+            .format(title+'.conf', title, path, date, date))
+
+
 def check_config():
+
     print('Checking configuration files.')
     path = ''.join([CONF_DIR, 'ipf.conf'])
-    if os.path.exists(path):
+    if exists(path):
         print('ipf.conf.............................................OK')
     else:
-        with open(path, 'a') as f:
-            f.write('#filter configuration')
+        copyfile(''.join([CONF_DIR, '.ipf.bck']), path)
+        add_file_to_db('ipf', path)
         print('ipf.conf has been created............................OK')
 
     path = ''.join([CONF_DIR, 'ipf6.conf'])
-    if os.path.exists(path):
+    if exists(path):
         print('ipf6.conf............................................OK')
     else:
         with open(path, 'a') as f:
             f.write('#ipf6 configuration')
+        add_file_to_db('ipf6', path)
         print('ipf6.conf has been created...........................OK')
 
     path = ''.join([CONF_DIR, 'ipnat.conf'])
-    if os.path.exists(path):
+    if exists(path):
         print('ipnat.conf...........................................OK')
     else:
         with open(path, 'a') as f:
             f.write('#NAT configuration')
+        add_file_to_db('ipnat', path)
         print('ipnat.conf has been created..........................OK')
 
     path = ''.join([CONF_DIR, 'ippool.conf'])
-    if os.path.exists(path):
+    if exists(path):
         print('ippool.conf..........................................OK')
     else:
         with open(path, 'a') as f:
             f.write('#ippool configuration\n\n{}'.format(CONF_WARNING))
+        add_file_to_db('ippool', path)
         print('ippool.conf has been created.........................OK')
 
     print('Startup configuration done.\n')
@@ -170,12 +187,12 @@ def update_blacklist():
 
     try:
         print('Downloading updates.')
-        wget.download(url, zip_file)
+        download(url, zip_file)
     except Exception as e:
         return e
 
     try:
-        with zipfile.ZipFile(zip_file, 'r') as f:
+        with ZipFile(zip_file, 'r') as f:
             f.extractall(directory)
         print('\nUnzip file...........................................OK')
     except Exception as e:
@@ -198,23 +215,23 @@ def update_blacklist():
         return e
 
     try:
-        os.remove(zip_file)
-        os.remove(txt_file)
+        remove(zip_file)
+        remove(txt_file)
     except Exception as e:
         return e
 
-    '''try:
+    try:
         sh.ippool('-F')
         sh.ippool(f=conf_file)
+        sh.svcadm('refresh', 'ipfilter')
     except Exception as e:
         return e
-    '''
 
 
 def system_start():
     check_dirs()
     check_config()
-    # update_blacklist()
+    update_blacklist()
     schedule.every().day.do(update_blacklist)
 
     while True:
@@ -223,6 +240,6 @@ def system_start():
 
 
 def system_exit():
-    f = open(os.devnull, 'w')
+    f = open(devnull, 'w')
     sys.stderr = f
     sys.exit()
