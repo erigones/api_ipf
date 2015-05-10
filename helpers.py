@@ -198,8 +198,14 @@ def check_config():
     In case the file does not exist, it is created.
     In case of ipf file, backup configuration is copied from backup file.
     """
+
+    # Allow file creation.
+    mod = sh.stat('-c %a', CONF_DIR).strip()
+    sh.chmod('666', CONF_DIR)
+
     print('Checking configuration files.')
     path = ''.join([CONF_DIR, 'ipf.conf'])
+
     if exists(path):
         print('ipf.conf.............................................OK')
     else:
@@ -234,6 +240,8 @@ def check_config():
         add_file_to_db('ippool', path)
         print('ippool.conf has been created.........................OK')
 
+    # Change back to original.
+    sh.chmod(sh.chmod(mod, CONF_DIR))
     print('Startup configuration done.\n')
 
 
