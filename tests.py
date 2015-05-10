@@ -141,7 +141,7 @@ class LogFileTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_log_file(self):
-        response = self.client.get(''.join([self.url, 'test.log/']))
+        response = self.client.get(''.join([self.url, self.title, '/']))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_not_existing_log_file(self):
@@ -149,7 +149,7 @@ class LogFileTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_log_file(self):
-        response = self.client.delete(''.join([self.url, 'test.log/']))
+        response = self.client.delete(''.join([self.url, self.title, '/']))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 

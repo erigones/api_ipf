@@ -9,7 +9,6 @@ from django.db import connection
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
 from api_ipf.settings import *
-from api_ipf.serializers import ConfigFileSerializer
 import sys
 import sh
 import schedule
@@ -27,7 +26,15 @@ class JSONResponse(HttpResponse):
 
 
 def file_content(path):
+    """
+    A function that reads the file and returns its content.
 
+    In case the file is deleted by external impact and remains in the database,
+    function returns error NOT FOUND.
+
+    :param path: path to file
+    :return: file content
+    """
     try:
         with open(path, 'rb') as f:
             return JSONResponse(f.read(), status=200)
@@ -37,10 +44,16 @@ def file_content(path):
         return JSONResponse(e, status=400)
 
 
-def config_delete(obj, path):
+def config_delete(config, path):
+    """
+    A function that deletes a specific configuration object.
 
+    :param config: specific config object
+    :param path: path to file
+    :return: confirmation of deletion
+    """
     try:
-        obj.delete()
+        config.delete()
         remove(path)
         return JSONResponse('Config deleted.', status=204)
     except Exception as e:
@@ -48,7 +61,13 @@ def config_delete(obj, path):
 
 
 def log_delete(log, path):
+    """
+    A function that deletes a specific log object.
 
+    :param log: specific log object
+    :param path: path to log
+    :return: confirmation of deletion
+    """
     try:
         sh.pkill('ipmon')
         log.delete()
@@ -59,29 +78,43 @@ def log_delete(log, path):
 
 
 def config_addition(title, form):
+    """
+    A function that checks correctness of the configuration file.
 
+    In case the file is correct returned is affirmative response 201 CREATED.
+    In case the file is incorrect returned is negative response 400 BAD_REQUEST.
+
+    :param title: file's title
+    :param form: file's form
+    :return: results of addition
+    """
     path = ''.join([CONF_DIR, title])
+    # backup file for storing an actual configuration
+    bck_file = ''.join([CONF_DIR, 'conf.bck'])
 
     try:
         if form not in ['ipf', 'ipnat', 'ippool', 'ipf6']:
             return JSONResponse('Incorrect type.', status=400)
 
         elif form in ['ipf', 'ipf6']:
-            bck_file = sh.ipfstat('-io')
+            with open(bck_file) as f:
+                f.write(sh.ipfstat('-io'))
             if sh.ipf(f=path):
                 sh.ipf('-Fa', f=bck_file)
                 return JSONResponse('Incorrect ipf format.', status=400)
             return JSONResponse('Ipf Configuration added.', status=201)
 
         elif form == 'ipnat':
-            bck_file = sh.ipnat('-l')
+            with open(bck_file) as f:
+                f.write(sh.ipfnat('-l'))
             if sh.ipnat(f=path):
                 sh.ipnat('-FC', f=bck_file)
-                return JSONResponse('Incorrect ipf format.', status=400)
-            return JSONResponse('Nat configuration added.', status=201)
+                return JSONResponse('Incorrect ipnat format.', status=400)
+            return JSONResponse('Ipnat configuration added.', status=201)
 
         elif form == 'ippool':
-            bck_file = sh.ippool('-l')
+            with open(bck_file) as f:
+                f.write(sh.ipfstat('-l'))
             if sh.ippool(f=path):
                 sh.ippool('-F')
                 sh.ippool(f=bck_file)
@@ -93,7 +126,13 @@ def config_addition(title, form):
 
 
 def activate(form, path):
+    """
+    A function that activates stored configuration files.
 
+    :param form: file's form
+    :param path: path to the file
+    :return: affirmation of the activation
+    """
     try:
         if form in ['ipf', 'ipf6']:
             sh.ipf('-Fa', f=path)
@@ -120,7 +159,11 @@ def realize_command(args):
 
 
 def check_dirs():
+    """
+    A function that checks an existence of directories.
 
+    In case the directory does not exist, it is created.
+    """
     print('Checking directories.')
     if exists(CONF_DIR):
         print('CONF_DIR.............................................OK')
@@ -136,16 +179,26 @@ def check_dirs():
 
 
 def add_file_to_db(title, path):
+    """
+    A function that add configuration files, created at start up, to database.
 
+    :param title: file's title
+    :param path: path to the file
+    """
     cursor = connection.cursor()
     date = datetime.now()
     cursor.execute(
-            'INSERT INTO api_ipf_configfile VALUES ("{}","{}","{}","{}","{}")'
-            .format(title+'.conf', title, path, date, date))
+        'INSERT INTO api_ipf_configfile VALUES ("{}","{}","{}","{}","{}")'
+        .format(title+'.conf', title, path, date, date))
 
 
 def check_config():
+    """
+    A function that checks an existence of configuration files.
 
+    In case the file does not exist, it is created.
+    In case of ipf file, backup configuration is copied from backup file.
+    """
     print('Checking configuration files.')
     path = ''.join([CONF_DIR, 'ipf.conf'])
     if exists(path):
@@ -186,7 +239,12 @@ def check_config():
 
 
 def update_blacklist():
+    """
+    A function that downloads IP blacklist from a specific web address and
+    updates the current one.
 
+    In case the update process is interrupted, error is returned.
+    """
     url = 'http://myip.ms/files/blacklist/general/full_blacklist_database.zip'
     directory = '/tmp/'
     zip_file = ''.join([directory, 'full_blacklist_database.zip'])
@@ -237,7 +295,11 @@ def update_blacklist():
 
 
 def system_start():
-
+    """
+    A function that checks an existence of directories and configuration files,
+    and updates IP blacklist as soon as service starts. Also set up a every
+    update of IP blacklist.
+    """
     check_dirs()
     check_config()
     update_blacklist()
@@ -249,7 +311,9 @@ def system_start():
 
 
 def system_exit():
-
+    """
+    A function that discards all errors produced at service shutdown.
+    """
     f = open(devnull, 'w')
     sys.stderr = f
     sys.exit()

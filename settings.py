@@ -2,7 +2,16 @@ from eszone_ipf.settings import BASE_DIR
 
 ALLOWED_COMMANDS = ['ipf', 'ipfstat', 'ipnat', 'ippool', 'ipmon', 'svcadm',
                     'scvs']
-CONF_DIR = ''.join([BASE_DIR, '/conf/']) #/etc/ipf/
-LOG_DIR = ''.join([BASE_DIR, '/log/']) #/var/log/
+
+# Directory for storing configuration files.
+CONF_DIR = ''.join([BASE_DIR, '/conf/'])
+
+# Directory for storing logs.
+LOG_DIR = ''.join([BASE_DIR, '/log/'])
+
+# Warning in the ippool.conf configuration file
+# for a recognition of a user defined ippool and IP blacklist.
 CONF_WARNING = '#CONFIGURATION UNDER THIS LINE WILL BE DELETED AT UPDATE'
+
+# IP blacklist update frequency in seconds (86400 means update every day).
 UPDATE_FREQUENCY = 86400
