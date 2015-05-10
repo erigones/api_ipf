@@ -156,7 +156,6 @@ def blacklist(request):
     An API view function that updates IP blacklist on client's request.
 
     :param request: client's request
-    :param title: a unique log's title
     :return: JSON response
     """
     if request.method == 'GET':
@@ -205,7 +204,7 @@ def ipnat(request, args):
     if request.method == 'GET':
         try:
             return JSONResponse(sh.ipnat('","'.join(['"', args.split(), '"'])),
-                                         status=200)
+                                status=200)
         except sh.ErrorReturnCode_2 as e:
             return JSONResponse(e, status=400)
 
@@ -227,7 +226,7 @@ def ippool(request, args):
     if request.method == 'GET':
         try:
             return JSONResponse(sh.ippool('","'.join(['"', args.split(), '"'])),
-                                          status=200)
+                                status=200)
         except sh.ErrorReturnCode_2 as e:
             return JSONResponse(e, status=400)
 
@@ -248,8 +247,8 @@ def ipfstat(request, args):
     """
     if request.method == 'GET':
         try:
-            return JSONResponse(sh.ipfstat('","'.join(['"', args.split(), '"'])),
-                                           status=200)
+            return JSONResponse(sh.ipfstat(
+                '","'.join(['"', args.split(), '"'])), status=200)
         except sh.ErrorReturnCode_2 as e:
             return JSONResponse(e, status=400)
 
@@ -271,7 +270,7 @@ def ipmon(request, args):
     if request.method == 'GET':
         try:
             return JSONResponse(sh.ipmon('","'.join(['"', args.split(), '"'])),
-                                         status=200)
+                                status=200)
         except sh.ErrorReturnCode_2 as e:
             return JSONResponse(e, status=400)
 
@@ -293,27 +292,27 @@ def svcadm(request, args):
     if request.method == 'GET':
         try:
             return JSONResponse(sh.svcadm('","'.join(['"', args.split(), '"'])),
-                                          status=200)
+                                status=200)
         except sh.ErrorReturnCode_2 as e:
             return JSONResponse(e, status=400)
 
+
 @csrf_exempt
 @api_view(['GET'])
-def svcs(request, args):
+def state(request):
     """
-    An API view function that takes arguments from request and tries execute
-    them with a svcs command.
+    An API view function that returns current IPFilter's state.
 
     In case the execution was done returned is affirmative response 200 OK.
     In case an error occurs returned is negative response 400 BAD_REQUEST.
 
     :param request: client's request
-    :param args: svcs arguments
     :return: JSON response
     """
     if request.method == 'GET':
         try:
-            return JSONResponse(sh.svcs('","'.join(['"', args.split(), '"'])),
-                                        status=200)
+            return JSONResponse(
+                sh.cut(sh.tail(sh.svcs('ipfilter'), n=1), d=' ', f=1),
+                status=200)
         except sh.ErrorReturnCode_2 as e:
             return JSONResponse(e, status=400)

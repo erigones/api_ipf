@@ -1,7 +1,6 @@
 from os import remove, makedirs, devnull
 from os.path import exists
 from shutil import copyfile
-from subprocess import Popen
 from datetime import datetime
 from wget import download
 from zipfile import ZipFile
