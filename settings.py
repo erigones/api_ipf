@@ -1,8 +1,5 @@
 from eszone_ipf.settings import BASE_DIR
 
-ALLOWED_COMMANDS = ['ipf', 'ipfstat', 'ipnat', 'ippool', 'ipmon', 'svcadm',
-                    'scvs']
-
 # Directory for storing configuration files.
 CONF_DIR = ''.join([BASE_DIR, '/conf/'])
 

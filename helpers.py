@@ -29,11 +29,13 @@ def file_content(path):
     """
     A function that reads the file and returns its content.
 
+    In case the file is opened a read correctly,function returns affirmative
+    response 200 OK.
     In case the file is deleted by external impact and remains in the database,
-    function returns error NOT FOUND.
+    function returns error 404 NOT FOUND.
 
     :param path: path to file
-    :return: file content
+    :return: JSON response
     """
     try:
         with open(path, 'rb') as f:
@@ -48,9 +50,12 @@ def config_delete(config, path):
     """
     A function that deletes a specific configuration object.
 
+    In case the deletion was done returned is affirmative response 201 CREATED.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
     :param config: specific config object
     :param path: path to file
-    :return: confirmation of deletion
+    :return: JSON response
     """
     try:
         config.delete()
@@ -64,9 +69,12 @@ def log_delete(log, path):
     """
     A function that deletes a specific log object.
 
+    In case the deletion was done returned is affirmative response 201 CREATED.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
     :param log: specific log object
     :param path: path to log
-    :return: confirmation of deletion
+    :return: JSON response
     """
     try:
         sh.pkill('ipmon')
@@ -86,7 +94,7 @@ def config_addition(title, form):
 
     :param title: file's title
     :param form: file's form
-    :return: results of addition
+    :return: JSON response
     """
     path = ''.join([CONF_DIR, title])
     # backup file for storing an actual configuration
@@ -129,9 +137,12 @@ def activate(form, path):
     """
     A function that activates stored configuration files.
 
+    In case the activation was correct returned is affirmative response 201 OK.
+    In case it was incorrect returned is negative response 400 BAD_REQUEST.
+
     :param form: file's form
     :param path: path to the file
-    :return: affirmation of the activation
+    :return: JSON response
     """
     try:
         if form in ['ipf', 'ipf6']:
@@ -143,17 +154,6 @@ def activate(form, path):
             sh.ippool(f=path)
             sh.svcadm('refresh', 'ipfilter')
         return JSONResponse('Configuration activated.', status=200)
-    except Exception as e:
-        return JSONResponse(e, status=400)
-
-
-def realize_command(args):
-
-    try:
-        if args.split()[0] in ALLOWED_COMMANDS:
-            return JSONResponse(Popen(args).read(), status=200)
-        else:
-            return JSONResponse("Incorrect method", status=400)
     except Exception as e:
         return JSONResponse(e, status=400)
 
@@ -243,7 +243,7 @@ def update_blacklist():
     A function that downloads IP blacklist from a specific web address and
     updates the current one.
 
-    In case the update process is interrupted, error is returned.
+    :return: In case the update process is interrupted, error is returned.
     """
     url = 'http://myip.ms/files/blacklist/general/full_blacklist_database.zip'
     directory = '/tmp/'

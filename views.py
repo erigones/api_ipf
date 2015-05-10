@@ -155,7 +155,7 @@ def blacklist(request):
     """
     An API view function that updates IP blacklist on client's request.
 
-    :param request:
+    :param request: client's request
     :param title: a unique log's title
     :return: JSON response
     """
@@ -168,7 +168,152 @@ def blacklist(request):
 
 @csrf_exempt
 @api_view(['GET'])
-def other_commands(request, args):
+def ipf(request, args):
+    """
+    An API view function that takes arguments from request and tries execute
+    them with an ipf command.
 
+    In case the execution was done returned is affirmative response 200 OK.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
+    :param request: client's request
+    :param args: ipf arguments
+    :return: JSON response
+    """
     if request.method == 'GET':
-        return realize_command(args)
+        try:
+            return JSONResponse(sh.ipf('","'.join(['"', args.split(), '"'])),
+                                status=200)
+        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(e, status=400)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def ipnat(request, args):
+    """
+    An API view function that takes arguments from request and tries execute
+    them with an ipnat command.
+
+    In case the execution was done returned is affirmative response 200 OK.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
+    :param request: client's request
+    :param args: ipnat arguments
+    :return: JSON response
+    """
+    if request.method == 'GET':
+        try:
+            return JSONResponse(sh.ipnat('","'.join(['"', args.split(), '"'])),
+                                         status=200)
+        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(e, status=400)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def ippool(request, args):
+    """
+    An API view function that takes arguments from request and tries execute
+    them with an ippool command.
+
+    In case the execution was done returned is affirmative response 200 OK.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
+    :param request: client's request
+    :param args: ippool arguments
+    :return: JSON response
+    """
+    if request.method == 'GET':
+        try:
+            return JSONResponse(sh.ippool('","'.join(['"', args.split(), '"'])),
+                                          status=200)
+        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(e, status=400)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def ipfstat(request, args):
+    """
+    An API view function that takes arguments from request and tries execute
+    them with an ipfstat command.
+
+    In case the execution was done returned is affirmative response 200 OK.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
+    :param request: client's request
+    :param args: ipfstat arguments
+    :return: JSON response
+    """
+    if request.method == 'GET':
+        try:
+            return JSONResponse(sh.ipfstat('","'.join(['"', args.split(), '"'])),
+                                           status=200)
+        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(e, status=400)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def ipmon(request, args):
+    """
+    An API view function that takes arguments from request and tries execute
+    them with an ipmon command.
+
+    In case the execution was done returned is affirmative response 200 OK.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
+    :param request: client's request
+    :param args: ipmon arguments
+    :return: JSON response
+    """
+    if request.method == 'GET':
+        try:
+            return JSONResponse(sh.ipmon('","'.join(['"', args.split(), '"'])),
+                                         status=200)
+        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(e, status=400)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def svcadm(request, args):
+    """
+    An API view function that takes arguments from request and tries execute
+    them with a svcadm command.
+
+    In case the execution was done returned is affirmative response 200 OK.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
+    :param request: client's request
+    :param args: svcadm arguments
+    :return: JSON response
+    """
+    if request.method == 'GET':
+        try:
+            return JSONResponse(sh.svcadm('","'.join(['"', args.split(), '"'])),
+                                          status=200)
+        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(e, status=400)
+
+@csrf_exempt
+@api_view(['GET'])
+def svcs(request, args):
+    """
+    An API view function that takes arguments from request and tries execute
+    them with a svcs command.
+
+    In case the execution was done returned is affirmative response 200 OK.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
+    :param request: client's request
+    :param args: svcs arguments
+    :return: JSON response
+    """
+    if request.method == 'GET':
+        try:
+            return JSONResponse(sh.svcs('","'.join(['"', args.split(), '"'])),
+                                        status=200)
+        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(e, status=400)
