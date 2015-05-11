@@ -1,6 +1,5 @@
 from django.conf.urls import patterns, url
-
-from service_ipf.api_ipf import views
+from api_ipf import views
 
 
 urlpatterns = patterns('api_ipf.views',

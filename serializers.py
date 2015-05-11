@@ -1,6 +1,5 @@
 from rest_framework import serializers
-
-from service_ipf.api_ipf.models import ConfigFile, LogFile
+from api_ipf.models import ConfigFile, LogFile
 
 
 class ConfigFileSerializer(serializers.ModelSerializer):

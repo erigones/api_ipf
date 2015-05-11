@@ -1,9 +1,6 @@
-from subprocess import Popen
-
 from django.db import models
-
-from service_ipf.api_ipf.settings import CONF_DIR, LOG_DIR
-
+from api_ipf.settings import CONF_DIR, LOG_DIR
+import sh
 
 class ConfigFile(models.Model):
     """
@@ -47,6 +44,6 @@ class LogFile(models.Model):
         path = ''.join([LOG_DIR, self.title, '.log'])
         open(path, 'a').close()
         self.log = path
-        Popen('ipmon -aD {}'.format(path))
+        sh.ipmon('-aD', path)
         super(LogFile, self).save(*args, **kwargs)
         return self.directory
