@@ -1,0 +1,60 @@
+# ipf config file
+# https://www.freebsd.org/doc/handbook/firewalls-ipf.html
+
+# Uncommenting next line enable loopback filtering to filter between zones 
+# set intercept_loopback true;
+
+# Outbound traffic session
+
+# Allow HTTP and HTTPS
+pass out quick on net0 proto tcp from any to any port = 80 flags S keep state
+pass out quick on net0 proto tcp from any to any port = 443 flags S keep state
+
+# Allow email
+pass out quick on net0  proto tcp from any to any port = 110 flags S keep state
+pass out quick on net0 proto tcp from any to any port = 25 flags S keep state
+
+# Allow FTP
+pass out quick on net0 proto tcp from any to any port = 21 flags S keep state
+
+# Allow SSH
+pass out quick on net0 proto tcp from any to any port = 22 flags S keep state
+
+# Allow NTP
+pass out quick on net0 proto tcp from any to any port = 37 flags S keep state
+
+# Allow outbound access to public DNS servers.
+# get DNS server IPs from /etc/resolv.conf.
+# pass out quick on net0 proto tcp from any to SET_IP port = 53 flags S keep state
+# pass out quick on net0 proto udp from any to SET_IP port = 53 keep state
+
+# Allow ping
+pass in quick on net0 proto icmp from any to any icmp-type 0 code 0 keep state
+pass out quick on net0 proto icmp from any to any icmp-type 8 code 0 keep state
+
+# Inbound traffic session
+# Block all inbound traffic from non-routable or reserved address spaces
+
+# Private IPs IP of global zone must not be blocked
+block in quick on net0 from 192.168.0.0/16 to any
+block in quick on net0 from 172.16.0.0/12 to any
+# block in quick on net0 from 10.0.0.0/8 to any
+
+# Loopback
+block in quick on net0 from 127.0.0.0/8 to any
+block in quick on net0 from 0.0.0.0/8 to any
+
+# DHCP auto-config
+block in quick on net0 from 169.254.0.0/16 to any
+
+# Reserved for docs
+block in quick on net0 from 192.0.2.0/24 to any
+
+# Sun cluster interconnect
+block in quick on net0 from 204.152.64.0/23 to any
+
+# D, E multicast
+block in quick on net0 from 224.0.0.0/3 to any
+
+# Default policy
+# block in log first quick on net0 all
