@@ -7,11 +7,13 @@ from wget import download
 from django.db import connection
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
+from eszone_ipf.settings import BASE_DIR
 from api_ipf.settings import *
 import sh
 import schedule
 import sys
 import time
+
 
 
 class JSONResponse(HttpResponse):
@@ -209,7 +211,7 @@ def check_config():
     if exists(path):
         print('ipf.conf.............................................OK')
     else:
-        copyfile(''.join([CONF_DIR, '.ipf.bck']), path)
+        copyfile(''.join([BASE_DIR, '/api_ipf/.ipf.bck']), path)
         add_file_to_db('ipf', path)
         print('ipf.conf has been created............................OK')
 
@@ -241,7 +243,7 @@ def check_config():
         print('ippool.conf has been created.........................OK')
 
     # Change back to original.
-    sh.chmod(sh.chmod(mod, CONF_DIR))
+    sh.chmod(mod, CONF_DIR)
     print('Startup configuration done.\n')
 
 
