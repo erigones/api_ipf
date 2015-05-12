@@ -2,7 +2,6 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from api_ipf.serializers import *
 from api_ipf.helpers import *
-import shlex
 
 
 @csrf_exempt

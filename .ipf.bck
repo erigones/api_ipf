@@ -56,5 +56,8 @@ block in quick on net0 from 204.152.64.0/23 to any
 # D, E multicast
 block in quick on net0 from 224.0.0.0/3 to any
 
+# Blacklist
+# block in quick all from pool/1 to any
+
 # Default policy
 # block in log first quick on net0 all
