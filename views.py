@@ -2,6 +2,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from api_ipf.serializers import *
 from api_ipf.helpers import *
+import shlex
 
 
 @csrf_exempt
@@ -25,10 +26,10 @@ def config(request):
     elif request.method == 'POST':
         serializer = ConfigFileSerializer(data=request.FILES)
         if serializer.is_valid():
-            response = config_addition(str(request.FILES['title']),
+	    response = config_addition(str(request.FILES['title']),
                                        str(request.FILES['form']))
             if response.status_code == 201:
-                serializer.save()
+   	        serializer.save()
             return response
         else:
             return JSONResponse(serializer.errors, status=400)
@@ -117,7 +118,7 @@ def log(request):
         serializer = LogFileSerializer(data=request.DATA)
         if serializer.is_valid():
             path = serializer.save()
-            sh.ipmon('-Fa', f=path)
+            sh.ipmon('-aD', path)
             return JSONResponse('Log created.', status=200)
         else:
             return JSONResponse(serializer.errors, status=400)
@@ -181,10 +182,9 @@ def ipf(request, args):
     """
     if request.method == 'GET':
         try:
-            return JSONResponse(sh.ipf('","'.join(['"', args.split(), '"'])),
-                                status=200)
-        except sh.ErrorReturnCode_2 as e:
-            return JSONResponse(e, status=400)
+	    return JSONResponse(str(sh.ipf(str(args))), status=200)
+        except Exception as e:
+	    return JSONResponse(e, status=400)
 
 
 @csrf_exempt
@@ -203,9 +203,8 @@ def ipnat(request, args):
     """
     if request.method == 'GET':
         try:
-            return JSONResponse(sh.ipnat('","'.join(['"', args.split(), '"'])),
-                                status=200)
-        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(str(sh.ipnat(str(args))), status=200)
+        except Exception as e:
             return JSONResponse(e, status=400)
 
 
@@ -225,9 +224,8 @@ def ippool(request, args):
     """
     if request.method == 'GET':
         try:
-            return JSONResponse(sh.ippool('","'.join(['"', args.split(), '"'])),
-                                status=200)
-        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(str(sh.ippool(str(args))), status=200)
+        except Exception as e:
             return JSONResponse(e, status=400)
 
 
@@ -247,9 +245,8 @@ def ipfstat(request, args):
     """
     if request.method == 'GET':
         try:
-            return JSONResponse(sh.ipfstat(
-                '","'.join(['"', args.split(), '"'])), status=200)
-        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(str(sh.ipfstat(str(args))), status=200)
+        except Exception as e:
             return JSONResponse(e, status=400)
 
 
@@ -269,9 +266,8 @@ def ipmon(request, args):
     """
     if request.method == 'GET':
         try:
-            return JSONResponse(sh.ipmon('","'.join(['"', args.split(), '"'])),
-                                status=200)
-        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(str(sh.ipmon(str(args))), status=200)
+        except Exception as e:
             return JSONResponse(e, status=400)
 
 
@@ -279,8 +275,8 @@ def ipmon(request, args):
 @api_view(['GET'])
 def svcadm(request, args):
     """
-    An API view function that takes arguments from request and tries execute
-    them with a svcadm command.
+    An API view function that takes argument from request and tries execute
+    it with a svcadm command.
 
     In case the execution was done returned is affirmative response 200 OK.
     In case an error occurs returned is negative response 400 BAD_REQUEST.
@@ -291,28 +287,9 @@ def svcadm(request, args):
     """
     if request.method == 'GET':
         try:
-            return JSONResponse(sh.svcadm('","'.join(['"', args.split(), '"'])),
-                                status=200)
-        except sh.ErrorReturnCode_2 as e:
+            return JSONResponse(str(sh.svcadm(str(args), 'ipfilter')),
+				status=200)
+        except Exception as e:
             return JSONResponse(e, status=400)
 
 
-@csrf_exempt
-@api_view(['GET'])
-def state(request):
-    """
-    An API view function that returns current IPFilter's state.
-
-    In case the execution was done returned is affirmative response 200 OK.
-    In case an error occurs returned is negative response 400 BAD_REQUEST.
-
-    :param request: client's request
-    :return: JSON response
-    """
-    if request.method == 'GET':
-        try:
-            return JSONResponse(
-                sh.cut(sh.tail(sh.svcs('ipfilter'), n=1), d=' ', f=1),
-                status=200)
-        except sh.ErrorReturnCode_2 as e:
-            return JSONResponse(e, status=400)

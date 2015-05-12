@@ -15,5 +15,4 @@ urlpatterns = patterns('api_ipf.views',
     url(r'^ipfstat/(?P<args>.+)/$', views.ipfstat),
     url(r'^ipmon/(?P<args>.+)/$', views.ipmon),
     url(r'^svcadm/(?P<args>.+)/$', views.svcadm),
-    url(r'^state/(?P<args>.+)/$', views.state),
 )

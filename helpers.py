@@ -100,30 +100,30 @@ def config_addition(title, form):
     path = ''.join([CONF_DIR, title])
     # backup file for storing an actual configuration
     bck_file = ''.join([CONF_DIR, 'conf.bck'])
-
+    
     try:
         if form not in ['ipf', 'ipnat', 'ippool', 'ipf6']:
             return JSONResponse('Incorrect type.', status=400)
 
         elif form in ['ipf', 'ipf6']:
-            with open(bck_file) as f:
-                f.write(sh.ipfstat('-io'))
+	    with open(bck_file, 'w') as f:
+                f.write(str(sh.ipfstat('-io')))
             if sh.ipf(f=path):
                 sh.ipf('-Fa', f=bck_file)
                 return JSONResponse('Incorrect ipf format.', status=400)
-            return JSONResponse('Ipf Configuration added.', status=201)
+	    return JSONResponse('Ipf Configuration added.', status=201)
 
         elif form == 'ipnat':
-            with open(bck_file) as f:
-                f.write(sh.ipfnat('-l'))
+            with open(bck_file, 'w') as f:
+                f.write(str(sh.ipfnat('-l')))
             if sh.ipnat(f=path):
                 sh.ipnat('-FC', f=bck_file)
                 return JSONResponse('Incorrect ipnat format.', status=400)
             return JSONResponse('Ipnat configuration added.', status=201)
 
         elif form == 'ippool':
-            with open(bck_file) as f:
-                f.write(sh.ipfstat('-l'))
+            with open(bck_file, 'w') as f:
+                f.write(str(sh.ipfstat('-l')))
             if sh.ippool(f=path):
                 sh.ippool('-F')
                 sh.ippool(f=bck_file)
@@ -131,6 +131,7 @@ def config_addition(title, form):
             return JSONResponse('Ippool configuration added.', status=201)
 
     except Exception as e:
+	print(e)
         return JSONResponse(e, status=400)
 
 
@@ -187,10 +188,13 @@ def add_file_to_db(title, path):
     :param path: path to the file
     """
     cursor = connection.cursor()
-    date = datetime.now()
-    cursor.execute(
-        'INSERT INTO api_ipf_configfile VALUES ("{}","{}","{}","{}","{}")'
-        .format(title+'.conf', title, path, date, date))
+    cursor.execute('SELECT title FROM api_ipf_configfile WHERE title="{}"'
+                   .format(title+'.conf'))
+    if cursor.fetchone() == None:
+        date = datetime.now()
+        cursor.execute(
+            'INSERT INTO api_ipf_configfile VALUES ("{}","{}","{}","{}","{}")'
+            .format(title+'.conf', title, path, date, date))
 
 
 def check_config():
@@ -201,21 +205,22 @@ def check_config():
     In case of ipf file, backup configuration is copied from backup file.
     """
 
-    # Allow file creation.
     mod = sh.stat('-c %a', CONF_DIR).strip()
-    sh.chmod('666', CONF_DIR)
+    sh.chmod('666', CONF_DIR) 
 
     print('Checking configuration files.')
     path = ''.join([CONF_DIR, 'ipf.conf'])
+    add_file_to_db('ipf', path)
 
     if exists(path):
         print('ipf.conf.............................................OK')
     else:
         copyfile(''.join([BASE_DIR, '/api_ipf/.ipf.bck']), path)
-        add_file_to_db('ipf', path)
         print('ipf.conf has been created............................OK')
 
     path = ''.join([CONF_DIR, 'ipf6.conf'])
+    add_file_to_db('ipf6.conf', path)
+
     if exists(path):
         print('ipf6.conf............................................OK')
     else:
@@ -225,6 +230,8 @@ def check_config():
         print('ipf6.conf has been created...........................OK')
 
     path = ''.join([CONF_DIR, 'ipnat.conf'])
+    add_file_to_db('ipnat.conf', path)
+
     if exists(path):
         print('ipnat.conf...........................................OK')
     else:
@@ -234,6 +241,8 @@ def check_config():
         print('ipnat.conf has been created..........................OK')
 
     path = ''.join([CONF_DIR, 'ippool.conf'])
+    add_file_to_db('ippool.conf', path)
+
     if exists(path):
         print('ippool.conf..........................................OK')
     else:
@@ -241,11 +250,9 @@ def check_config():
             f.write('#ippool configuration\n\n{}'.format(CONF_WARNING))
         add_file_to_db('ippool', path)
         print('ippool.conf has been created.........................OK')
-
-    # Change back to original.
+    
     sh.chmod(mod, CONF_DIR)
     print('Startup configuration done.\n')
-
 
 def update_blacklist():
     """
