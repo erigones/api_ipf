@@ -290,5 +290,3 @@ def svcadm(request, args):
 				status=200)
         except Exception as e:
             return JSONResponse(e, status=400)
-
-
