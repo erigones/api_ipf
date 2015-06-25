@@ -212,6 +212,13 @@ def check_config():
     path = ''.join([CONF_DIR, 'ipf.conf'])
     add_file_to_db('ipf', path)
 
+    sh.svccfg('-s', 'ipfilter:default', 'setprop',
+              'firewall_config_default/policy = astring: "custom"')
+    sh.svccfg('-s', 'ipfilter:default', 'setprop',
+              'firewall_config_default/custom_policy_file = astring: "{}"'\
+              .format(path))
+    sh.svcadm('refresh', 'ipfilter')
+
     if exists(path):
         print('ipf.conf.............................................OK')
     else:
@@ -288,10 +295,10 @@ def update_blacklist():
 
             with open(conf_file, 'w') as ippool:
                 ippool.write(other_pools + CONF_WARNING + '\n\n' +
-                             'blacklist role = ipf type = tree number = 1\n{\n')
+                             'table role = ipf type = tree number = 1\n{\n')
                 for line in database.readlines()[15:]:
                     ippool.write(line.split()[0]+',\n')
-                ippool.write('}')
+                ippool.write('};')
         print('Blacklist update.....................................OK')
     except Exception as e:
         return e
