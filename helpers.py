@@ -211,7 +211,8 @@ def check_config():
     print('Checking configuration files.')
     path = ''.join([CONF_DIR, 'ipf.conf'])
     add_file_to_db('ipf', path)
-
+    
+    # set different boot ipf.conf location 
     sh.svccfg('-s', 'ipfilter:default', 'setprop',
               'firewall_config_default/policy = astring: "custom"')
     sh.svccfg('-s', 'ipfilter:default', 'setprop',
@@ -222,7 +223,7 @@ def check_config():
     if exists(path):
         print('ipf.conf.............................................OK')
     else:
-        copyfile(''.join([BASE_DIR, '/api_ipf/.ipf.bck']), path)
+        copyfile(''.join([BCK_DIR, '.ipf.bck']), path)
         print('ipf.conf has been created............................OK')
 
     path = ''.join([CONF_DIR, 'ipf6.conf'])
@@ -230,8 +231,7 @@ def check_config():
     if exists(path):
         print('ipf6.conf............................................OK')
     else:
-        with open(path, 'a') as f:
-            f.write('#ipf6 configuration')
+        copyfile(''.join([BCK_DIR, '.ipf6.bck']), path)
         print('ipf6.conf has been created...........................OK')
 
     path = ''.join([CONF_DIR, 'ipnat.conf'])
@@ -240,8 +240,7 @@ def check_config():
     if exists(path):
         print('ipnat.conf...........................................OK')
     else:
-        with open(path, 'a') as f:
-            f.write('#NAT configuration')
+        copyfile(''.join([BCK_DIR, '.ipnat.bck']), path)
         print('ipnat.conf has been created..........................OK')
 
     path = ''.join([CONF_DIR, 'ippool.conf'])
@@ -250,8 +249,9 @@ def check_config():
     if exists(path):
         print('ippool.conf..........................................OK')
     else:
+	copyfile(''.join([BCK_DIR, '.ippool.bck']), path)
         with open(path, 'a') as f:
-            f.write('#ippool configuration\n\n{}'.format(CONF_WARNING))
+            f.write('\n\n{}'.format(CONF_WARNING))
         print('ippool.conf has been created.........................OK')
     
     sh.chmod(mod, CONF_DIR)
