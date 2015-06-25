@@ -97,29 +97,29 @@ def config_addition(title, form):
     :param form: file's form
     :return: JSON response
     """
-    path = ''.join([CONF_DIR, title])
-    # backup file for storing an actual configuration
-    bck_file = ''.join([CONF_DIR, 'conf.bck'])
-    
-    try:
+     try:
         if form not in ['ipf', 'ipnat', 'ippool', 'ipf6']:
             return JSONResponse('Incorrect type.', status=400)
 
-        elif form in ['ipf', 'ipf6']:
+        # temporary path for new file
+	path = ''.join([BCK_DIR, title])
+
+	# backup file for storing an actual configuration
+	bck_file = ''.join([BCK_DIR, '.conf.bck'])
+
+        if form in ['ipf', 'ipf6']:
 	    with open(bck_file, 'w') as f:
                 f.write(str(sh.ipfstat('-io')))
             if sh.ipf(f=path):
                 sh.ipf('-Fa', f=bck_file)
-                return JSONResponse('Incorrect ipf format.', status=400)
-	    return JSONResponse('Ipf Configuration added.', status=201)
+                raise Exception('Incorrect ipf format.')
 
         elif form == 'ipnat':
             with open(bck_file, 'w') as f:
                 f.write(str(sh.ipfnat('-l')))
             if sh.ipnat(f=path):
                 sh.ipnat('-FC', f=bck_file)
-                return JSONResponse('Incorrect ipnat format.', status=400)
-            return JSONResponse('Ipnat configuration added.', status=201)
+                raise Exception('Incorrect ipnat format.')
 
         elif form == 'ippool':
             with open(bck_file, 'w') as f:
@@ -127,12 +127,16 @@ def config_addition(title, form):
             if sh.ippool(f=path):
                 sh.ippool('-F')
                 sh.ippool(f=bck_file)
-                return JSONResponse('Incorrect ippool format.', status=400)
-            return JSONResponse('Ippool configuration added.', status=201)
+                raise Exception('Incorrect ippool format.')
+
+        remove(path)
+	remove(bck_file)
+	return JSONResponse('Configuration added.', status=201)
 
     except Exception as e:
-	print(e)
-        return JSONResponse(str(e), status=400)
+	remove(path)
+	remove(bck_file)
+	return JSONResponse(str(e), status=400)
 
 
 def activate(form, path):
@@ -227,6 +231,7 @@ def check_config():
         print('ipf.conf has been created............................OK')
 
     path = ''.join([CONF_DIR, 'ipf6.conf'])
+    add_file_to_db('ipf6', path)
 
     if exists(path):
         print('ipf6.conf............................................OK')
@@ -235,7 +240,7 @@ def check_config():
         print('ipf6.conf has been created...........................OK')
 
     path = ''.join([CONF_DIR, 'ipnat.conf'])
-    add_file_to_db('ipnat.conf', path)
+    add_file_to_db('ipnat', path)
 
     if exists(path):
         print('ipnat.conf...........................................OK')
@@ -244,7 +249,7 @@ def check_config():
         print('ipnat.conf has been created..........................OK')
 
     path = ''.join([CONF_DIR, 'ippool.conf'])
-    add_file_to_db('ippool.conf', path)
+    add_file_to_db('ippool', path)
 
     if exists(path):
         print('ippool.conf..........................................OK')

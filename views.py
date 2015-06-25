@@ -1,4 +1,7 @@
+from os import remove
 from django.views.decorators.csrf import csrf_exempt
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 from rest_framework.decorators import api_view
 from api_ipf.serializers import *
 from api_ipf.helpers import *
@@ -23,12 +26,20 @@ def config(request):
         return JSONResponse(serializer.data, status=200)
 
     elif request.method == 'POST':
-        serializer = ConfigFileSerializer(data=request.FILES)
-        if serializer.is_valid():
-	    response = config_addition(str(request.FILES['title']),
-                                       str(request.FILES['form']))
-            if response.status_code == 201:
-   	        serializer.save()
+        # temporary file that is used to check correctness of uploaded file.
+	temp_title = '.temp.bck'
+       	default_storage.save(''.join([BCK_DIR, temp_title]), 
+			     ContentFile(request.FILES['directory'].read()))
+	
+	serializer = ConfigFileSerializer(data=request.FILES)
+	if serializer.is_valid():
+	    response = config_addition(temp_title, str(request.FILES['form']))
+
+	    # file was checked so it can be deleted
+	    default_storage.delete(temp_title)
+
+	    if response.status_code == 201:
+		serializer.save()
             return response
         else:
             return JSONResponse(serializer.errors, status=400)
@@ -60,12 +71,21 @@ def config_detail(request, title):
         return file_content(path)
 
     elif request.method == 'PUT':
-        request.FILES['form'] = config.get_form()
+        # temporary file that is used to check correctness of uploaded file.
+	temp_title = '.temp.bck'
+        default_storage.save(''.join([BCK_DIR, temp_title]),
+                             ContentFile(request.FILES['directory'].read()))
+        
+	request.FILES['form'] = config.get_form()
         serializer = ConfigFileSerializer(config, data=request.FILES)
         if serializer.is_valid():
             response = config_addition(str(request.FILES['title']),
                                        str(request.FILES['form']))
-            if response.status_code == 201:
+            response = config_addition(temp_title, str(request.FILES['form']))
+            default_storage.delete(temp_title)
+	    
+	    if response.status_code == 201:
+		remove(''.join([CONF_DIR, str(request.FILES['title'])]))
                 serializer.save()
             return response
         else:
