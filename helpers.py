@@ -44,7 +44,7 @@ def file_content(path):
     except IOError:
         return JSONResponse('Error: No such file (disk).', status=404)
     except Exception as e:
-        return JSONResponse(e, status=400)
+        return JSONResponse(str(e), status=400)
 
 
 def config_delete(config, path):
@@ -63,7 +63,7 @@ def config_delete(config, path):
         remove(path)
         return JSONResponse('Config deleted.', status=204)
     except Exception as e:
-        return JSONResponse(e, status=400)
+        return JSONResponse(str(e), status=400)
 
 
 def log_delete(log, path):
@@ -83,7 +83,7 @@ def log_delete(log, path):
         remove(path)
         return JSONResponse('Log deleted.', status=204)
     except Exception as e:
-        return JSONResponse(e, status=400)
+        return JSONResponse(str(e), status=400)
 
 
 def config_addition(title, form):
@@ -132,7 +132,7 @@ def config_addition(title, form):
 
     except Exception as e:
 	print(e)
-        return JSONResponse(e, status=400)
+        return JSONResponse(str(e), status=400)
 
 
 def activate(form, path):
@@ -157,7 +157,7 @@ def activate(form, path):
             sh.svcadm('refresh', 'ipfilter')
         return JSONResponse('Configuration activated.', status=200)
     except Exception as e:
-        return JSONResponse(e, status=400)
+        return JSONResponse(str(e), status=400)
 
 
 def check_dirs():
@@ -274,14 +274,14 @@ def update_blacklist():
         print('Downloading updates.')
         download(url, zip_file)
     except Exception as e:
-        return e
+        return str(e)
 
     try:
         with ZipFile(zip_file, 'r') as f:
             f.extractall(directory)
         print('\nUnzip file...........................................OK')
     except Exception as e:
-        return e
+        return str(e)
 
     try:
         with open(txt_file, 'r') as database:
@@ -297,20 +297,20 @@ def update_blacklist():
                 ippool.write('};')
         print('Blacklist update.....................................OK')
     except Exception as e:
-        return e
+        return str(e)
 
     try:
         remove(zip_file)
         remove(txt_file)
     except Exception as e:
-        return e
+        return str(e)
 
     try:
         sh.ippool('-F')
         sh.ippool(f=conf_file)
         sh.svcadm('refresh', 'ipfilter')
     except Exception as e:
-        return e
+        return str(e)
 
 
 def system_start():

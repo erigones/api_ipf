@@ -183,7 +183,7 @@ def ipf(request, args):
         try:
 	    return JSONResponse(str(sh.ipf(str(args))), status=200)
         except Exception as e:
-	    return JSONResponse(e, status=400)
+	    return JSONResponse(str(e), status=400)
 
 
 @csrf_exempt
@@ -204,7 +204,7 @@ def ipnat(request, args):
         try:
             return JSONResponse(str(sh.ipnat(str(args))), status=200)
         except Exception as e:
-            return JSONResponse(e, status=400)
+            return JSONResponse(str(e), status=400)
 
 
 @csrf_exempt
@@ -225,7 +225,7 @@ def ippool(request, args):
         try:
             return JSONResponse(str(sh.ippool(str(args))), status=200)
         except Exception as e:
-            return JSONResponse(e, status=400)
+            return JSONResponse(str(e), status=400)
 
 
 @csrf_exempt
@@ -249,7 +249,7 @@ def ipfstat_base(request):
         except IndexError:
 	    return JSONResponse(msg, status=200)
         except Exception as e:
-            return JSONResponse(e, status=400)
+            return JSONResponse(str(e), status=400)
 
 
 @csrf_exempt
@@ -270,7 +270,7 @@ def ipfstat(request, args):
         try:
             return JSONResponse(str(sh.ipfstat(str(args))), status=200)
         except Exception as e:
-            return JSONResponse(e, status=400)
+            return JSONResponse(str(e), status=400)
 
 
 @csrf_exempt
@@ -291,7 +291,7 @@ def ipmon(request, args):
         try:
             return JSONResponse(str(sh.ipmon(str(args))), status=200)
         except Exception as e:
-            return JSONResponse(e, status=400)
+            return JSONResponse(str(e), status=400)
 
 
 @csrf_exempt
@@ -313,4 +313,4 @@ def svcadm(request, args):
             return JSONResponse(str(sh.svcadm(str(args), 'ipfilter')),
 				status=200)
         except Exception as e:
-            return JSONResponse(e, status=400)
+            return JSONResponse(str(e), status=400)
