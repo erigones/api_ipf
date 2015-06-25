@@ -230,6 +230,30 @@ def ippool(request, args):
 
 @csrf_exempt
 @api_view(['GET'])
+def ipfstat_base(request):
+    """
+    An API view function that tries execute ipfstat command without arguments.
+
+    In case the execution was done returned is affirmative response 200 OK.
+    In case an error occurs returned is negative response 400 BAD_REQUEST.
+
+    :param request: client's request
+    :return: JSON response
+    """
+    if request.method == 'GET':
+        try:
+            msg=''
+            for x in sh.ipfstat().split('\n'):
+    		y = x.replace('\t', ' ').replace('  ', ' ').split(':')   	
+		msg+= y[0].ljust(22) + y[1] + '\n'
+        except IndexError:
+	    return JSONResponse(msg, status=200)
+        except Exception as e:
+            return JSONResponse(e, status=400)
+
+
+@csrf_exempt
+@api_view(['GET'])
 def ipfstat(request, args):
     """
     An API view function that takes arguments from request and tries execute
