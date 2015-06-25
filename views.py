@@ -89,7 +89,7 @@ def config_activate(request, title):
         try:
             config = ConfigFile.objects.get(title=title)
             path = ''.join([CONF_DIR, title])
-            return activate(config, path)
+            return activate(config.get_form(), path)
         except ConfigFile.DoesNotExist:
             return JSONResponse('Error: No such file (db).', status=404)
 

@@ -226,14 +226,12 @@ def check_config():
         print('ipf.conf has been created............................OK')
 
     path = ''.join([CONF_DIR, 'ipf6.conf'])
-    add_file_to_db('ipf6.conf', path)
 
     if exists(path):
         print('ipf6.conf............................................OK')
     else:
         with open(path, 'a') as f:
             f.write('#ipf6 configuration')
-        add_file_to_db('ipf6', path)
         print('ipf6.conf has been created...........................OK')
 
     path = ''.join([CONF_DIR, 'ipnat.conf'])
@@ -244,7 +242,6 @@ def check_config():
     else:
         with open(path, 'a') as f:
             f.write('#NAT configuration')
-        add_file_to_db('ipnat', path)
         print('ipnat.conf has been created..........................OK')
 
     path = ''.join([CONF_DIR, 'ippool.conf'])
@@ -255,7 +252,6 @@ def check_config():
     else:
         with open(path, 'a') as f:
             f.write('#ippool configuration\n\n{}'.format(CONF_WARNING))
-        add_file_to_db('ippool', path)
         print('ippool.conf has been created.........................OK')
     
     sh.chmod(mod, CONF_DIR)
