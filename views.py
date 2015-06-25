@@ -26,10 +26,10 @@ def config(request):
         return JSONResponse(serializer.data, status=200)
 
     elif request.method == 'POST':
-        # temporary file that is used to check correctness of uploaded file.
+	# temporary file that is used to check correctness of uploaded file.
 	temp_title = '.temp.bck'
        	default_storage.save(''.join([BCK_DIR, temp_title]), 
-			     ContentFile(request.FILES['directory'].read()))
+			    ContentFile(request.FILES['directory'].read()))
 	
 	serializer = ConfigFileSerializer(data=request.FILES)
 	if serializer.is_valid():
@@ -71,19 +71,16 @@ def config_detail(request, title):
         return file_content(path)
 
     elif request.method == 'PUT':
-        # temporary file that is used to check correctness of uploaded file.
+	# temporary file that is used to check correctness of uploaded file.
 	temp_title = '.temp.bck'
         default_storage.save(''.join([BCK_DIR, temp_title]),
                              ContentFile(request.FILES['directory'].read()))
         
 	request.FILES['form'] = config.get_form()
         serializer = ConfigFileSerializer(config, data=request.FILES)
-        if serializer.is_valid():
-            response = config_addition(str(request.FILES['title']),
-                                       str(request.FILES['form']))
-            response = config_addition(temp_title, str(request.FILES['form']))
+	if serializer.is_valid():
+	    response = config_addition(temp_title, str(request.FILES['form']))
             default_storage.delete(temp_title)
-	    
 	    if response.status_code == 201:
 		remove(''.join([CONF_DIR, str(request.FILES['title'])]))
                 serializer.save()
@@ -109,7 +106,7 @@ def config_activate(request, title):
         try:
             config = ConfigFile.objects.get(title=title)
             path = ''.join([CONF_DIR, title])
-            return activate(config.get_form(), path)
+	    return activate(config.get_form(), path)
         except ConfigFile.DoesNotExist:
             return JSONResponse('Error: No such file (db).', status=404)
 
@@ -262,14 +259,14 @@ def ipfstat_base(request):
     """
     if request.method == 'GET':
         try:
-            msg=''
+	    msg=''
             for x in sh.ipfstat().split('\n'):
     		y = x.replace('\t', ' ').replace('  ', ' ').split(':')   	
 		msg+= y[0].ljust(22) + y[1] + '\n'
         except IndexError:
 	    return JSONResponse(msg, status=200)
         except Exception as e:
-            return JSONResponse(str(e), status=400)
+	    return JSONResponse(str(e), status=400)
 
 
 @csrf_exempt

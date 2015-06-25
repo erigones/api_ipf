@@ -15,7 +15,6 @@ import sys
 import time
 
 
-
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
@@ -97,11 +96,12 @@ def config_addition(title, form):
     :param form: file's form
     :return: JSON response
     """
-     try:
+       
+    try:
         if form not in ['ipf', 'ipnat', 'ippool', 'ipf6']:
             return JSONResponse('Incorrect type.', status=400)
 
-        # temporary path for new file
+	# temporary path for new file
 	path = ''.join([BCK_DIR, title])
 
 	# backup file for storing an actual configuration
@@ -120,23 +120,23 @@ def config_addition(title, form):
             if sh.ipnat(f=path):
                 sh.ipnat('-FC', f=bck_file)
                 raise Exception('Incorrect ipnat format.')
-
-        elif form == 'ippool':
+        
+	elif form == 'ippool':
             with open(bck_file, 'w') as f:
                 f.write(str(sh.ipfstat('-l')))
             if sh.ippool(f=path):
                 sh.ippool('-F')
                 sh.ippool(f=bck_file)
                 raise Exception('Incorrect ippool format.')
-
-        remove(path)
+	
+	remove(path)
 	remove(bck_file)
 	return JSONResponse('Configuration added.', status=201)
 
     except Exception as e:
 	remove(path)
 	remove(bck_file)
-	return JSONResponse(str(e), status=400)
+        return JSONResponse(str(e), status=400)
 
 
 def activate(form, path):
@@ -215,7 +215,7 @@ def check_config():
     print('Checking configuration files.')
     path = ''.join([CONF_DIR, 'ipf.conf'])
     add_file_to_db('ipf', path)
-    
+
     # set different boot ipf.conf location 
     sh.svccfg('-s', 'ipfilter:default', 'setprop',
               'firewall_config_default/policy = astring: "custom"')
